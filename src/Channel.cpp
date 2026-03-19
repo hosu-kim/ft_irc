@@ -2,10 +2,10 @@
 
 /* Orthodox Canonical Form */
 Channel::Channel()
-	: _channelName("default"), _channelPassword("default"), _channelTopic("default") {}
+	: _channelName("default"), _channelPassword("default"), _channelTopic("default"), _userLimit(0) {}
 
-Channel::Channel(std::string channelName)
-	: _channelName(channelName), _channelPassword("default"), _channelTopic("default") {}
+Channel::Channel(std::string channelName, std::string channelPassword, std::string channelTopic, int userLimit)
+	: _channelName(channelName), _channelPassword(channelPassword), _channelTopic(channelTopic), _userLimit(userLimit) {}
 
 Channel::Channel(const Channel& src) {
 	*this = src;

@@ -40,8 +40,7 @@ class Channel {
 		/* Orthodox Canonical Form */
 		// The constructor sets up _channelName and initializes member variables.
 		Channel();
-		Channel(std::string channelName);
-		Channel(const Channel& src);
+		Channel(std::string channelName, std::string channelPassword, std::string channelTopic, int userLimit);
 		Channel& operator=(const Channel& src);
 		~Channel();
 		//======================================================================
@@ -52,6 +51,7 @@ class Channel {
 		std::string _channelName;
 		std::string _channelPassword;
 		std::string _channelTopic;
+		int			_userLimit;
 		/* I could use std::vector also, but when we search and kick a specific user,
 		   it's not effetive than std::map
 		     1. we have to search through users from beginning to end. that causes slow operation...
