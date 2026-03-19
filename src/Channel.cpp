@@ -27,3 +27,17 @@ Channel& Channel::operator=(const Channel& src) {
 
 Channel::~Channel() {}
 /*==============================================================================*/
+
+int joinUser(User* user, std::string password) {
+	if (this->_channelPassword != "" && this->_channelPassword != password)
+		return 475;
+
+	if (this->_channelMemebers.size() >= _userLimit) return 471;
+
+	if (_channelMembers.find(user->getNickname()) != _channelMembers.end()) {
+		return 0;
+	}
+
+	_channelMembers[user->getNickname()] = user;
+	return 0; // Success
+}

@@ -46,7 +46,7 @@ class Channel {
 		~Channel();
 		//======================================================================
 		/* Member Functions */
-		int joinUser(User* user);
+		int joinUser(User* user, std::string password);
 
 	private:
 		std::string _channelName;
