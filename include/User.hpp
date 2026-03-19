@@ -16,6 +16,8 @@
 class User
 {
 	public:
+        User();
+        
         std::string buffer;
 
         std::string getName() const;
@@ -29,7 +31,6 @@ class User
         void setHostmask(std::string _hostmask);
 
 	private:
-        User();
 
 		std::string name;
 		std::string nickname;

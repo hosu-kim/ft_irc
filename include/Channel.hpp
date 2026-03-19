@@ -17,7 +17,6 @@ TODOS:
 
 */
 
-
 #pragma once
 
 #include <iostream>
@@ -32,20 +31,31 @@ TODOS:
 #include <fcntl.h>
 #include <poll.h>
 #include <signal.h>
+#include <map> // std::map
 
+#include "User.hpp"
 
 class Channel {
 	public:
-		// OCF
+		/* Orthodox Canonical Form */
+		// The constructor sets up _channelName and initializes member variables.
 		Channel();
-		Channel(cosnt Channel& src);
+		Channel(std::string channelName);
+		Channel(const Channel& src);
+		Channel& operator=(const Channel& src);
+		~Channel();
+		//======================================================================
+		/* Member Functions */
+		int joinUser(User* user);
 
 	private:
-		std::string channelName;
-		std::string channelPassword;
-		std::string channelTopic;
-		// I could use std::vector<Clien*> but when we find and kick a specific user, but I didn't:
-		//     1. we have to search through users from beginning to end. that causes slow operation...
-		//     2. To find duplicate users, every time we have to uterate through them 😢
-		std::map<int, User*> channelUsers;
+		std::string _channelName;
+		std::string _channelPassword;
+		std::string _channelTopic;
+		/* I could use std::vector also, but when we search and kick a specific user,
+		   it's not effetive than std::map
+		     1. we have to search through users from beginning to end. that causes slow operation...
+		     2. To find duplicate users, every time we have to uterate through them 😢 */
+		//       vv: nickname vv: user instance
+		std::map<std::string, User*> _channelMembers;
 };

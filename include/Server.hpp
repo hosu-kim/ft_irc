@@ -22,6 +22,8 @@
 
 #include <stdlib.h>
 
+#include <cerrno>
+
 #define MAX_PORT_NUMBER 65535
 
 class Server
@@ -53,7 +55,27 @@ class Server
 				}
 		};
 
+		class RunTimeError: public std::exception
+		{
+			private:
+				std::string msg;
+			public:
+				RunTimeError(const std::string &message) : msg(message)
+				{}
+			virtual ~RunTimeError() throw() 
+			{}
+			virtual const char* what() const throw()
+			{
+				return msg.c_str();
+			}
+		};
+
 	private:
 		int port;
 		std::string password;
+		int	server_fd;
+		struct	sockaddr_in addr;
+		std::vector<pollfds> fds;
+		pollfd	user_poll[SOMAXCONN];
+		int		fd_count;
 };

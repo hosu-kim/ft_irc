@@ -1,5 +1,5 @@
-#include "User.hpp"
-#include "Server.hpp"
+#include "../include/User.hpp"
+#include "../include/Server.hpp"
 
 int main(int argc, char** argv) // argv[1] ... port | argv[2] ... password
 {
