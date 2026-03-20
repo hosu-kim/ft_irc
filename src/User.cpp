@@ -1,6 +1,10 @@
 #include "User.hpp"
 
-User::User() : name(""), nickname(""), fullname(""), hostmask(""), registered(false)
+User::User() : name(""), nickname(""), fullname(""), hostmask(""), registered(false), has_nick(false), has_user(false), pass_ok(false)
+{}
+
+User::User(int user_fd) : name(""), nickname(""), fullname(""), hostmask(""), registered(false),
+fd(user_fd)
 {}
 
 

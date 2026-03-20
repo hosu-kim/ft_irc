@@ -14,6 +14,7 @@
 #include <signal.h>
 
 #include "User.hpp"
+#include "Command.hpp"
 
 #include <map>
 #include <exception>
@@ -23,8 +24,10 @@
 #include <stdlib.h>
 
 #include <cerrno>
+#include <vector>
 
 #define MAX_PORT_NUMBER 65535
+#define MAX_CLIENTS 1024
 
 class Server
 {
@@ -34,26 +37,11 @@ class Server
 		Server(char **argv);
 		~Server();
 
-		void run();
-		void setSocket();
-
-		class WrongArgumentCount : public std::exception
-		{
-			private:
-				std::string msg;
-			public:
-				WrongArgumentCount(int val)
-				{
-					std::ostringstream oss;
-					oss << "Argc should be 3 but is " << val;
-					msg = oss.str();
-				}
-				virtual ~WrongArgumentCount() throw() {}
-				virtual const char* what() const throw()
-				{
-					return msg.c_str();
-				}
-		};
+		void 	run();
+		void 	setSocket();
+		void	newClient(void);
+		void	clientRequest(int i);
+		void	removeUser(int i);
 
 		class RunTimeError: public std::exception
 		{
@@ -71,11 +59,12 @@ class Server
 		};
 
 	private:
-		int port;
-		std::string password;
-		int	server_fd;
+		int 				port;
+		std::string 		password;
+		int					server_fd;
 		struct	sockaddr_in addr;
-		std::vector<pollfds> fds;
-		pollfd	user_poll[SOMAXCONN];
-		int		fd_count;
+		std::vector<pollfd> fds;
+		pollfd				user_poll[MAX_CLIENTS];
+		int					fd_count;
+		usermap				users;
 };

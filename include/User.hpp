@@ -17,7 +17,8 @@ class User
 {
 	public:
         User();
-        
+        User(int user_fd);
+
         std::string buffer;
 
         std::string getName() const;
@@ -40,5 +41,8 @@ class User
         int fd;
 
 		bool	registered;
+        bool    has_user;
+        bool    has_nick;
+        bool    pass_ok;
 
 };

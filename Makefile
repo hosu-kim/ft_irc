@@ -1,8 +1,10 @@
 NAME = ircserv
 
 FILES =	main.cpp \
-		Client.cpp \
+		User.cpp \
 		Server.cpp \
+		Channel.cpp \
+		Command.cpp \
 
 SRC_DIR = src
 OBJ_DIR = .obj

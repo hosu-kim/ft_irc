@@ -1,4 +1,4 @@
-#include "../include/Channel.hpp"
+#include "Channel.hpp"
 
 /* Orthodox Canonical Form */
 Channel::Channel()
