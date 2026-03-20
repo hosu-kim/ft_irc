@@ -7,10 +7,13 @@ TODOS:
 		3. channel modes: i(invite-only), t(topic limit), k(password needed), l(user limit)
 	
 	# methods implementation
-		1. Join-leave: [DONE]joinUser(User* user, std::string password); [DONE]
-		leaveUser(User* user);
-		2. permission control(add-remove): addOperator(User* user), removeOperator(User* user);
-		3. message broadcase: broadcase(std::string msg, User* exceptUser)
+		1. Join-leave: 
+		   - [DONE]joinUser(User* user, std::string password);
+		   - [DONE]leaveUser(User* user);
+		2. permission control(add-remove):
+		   - [DONE] addOperator(User* user)
+		   - [DONE] removeOperator(User* user);
+		3. message broadcast: broadcast(std::string msg, User* exceptUser)
 			except the sender, all Users receive the messages.
 		4. mode change: setMode(), checkMode()
 */
@@ -47,6 +50,10 @@ class Channel {
 		int joinUser(User* user, std::string password);
 		int leaveUser(User* user);
 		size_t getMemberCount() const;
+		int addOperator(User* user);
+		int removeOperator(User* user);
+
+		void broadcast(std::string message, User* exceptUser);
 
 	private:
 		std::string _channelName;
@@ -54,7 +61,7 @@ class Channel {
 		std::string _channelTopic;
 		// // for the channel mode `l`(user limit)
 		// if _userLimit is 0, unlimited user entry allowed
-		int			_userLimit;
+		int _userLimit;
 		/* I could use std::vector also, but when we search and kick a specific user,
 		   it's not effetive than std::map
 		     1. we have to search through users from beginning to end. that causes slow operation...

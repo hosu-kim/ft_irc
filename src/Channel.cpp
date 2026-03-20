@@ -72,3 +72,59 @@ int Channel::leaveUser(User* user) {
 size_t Channel::getMemberCount() const {
 	return _channelMembers.size();
 }
+
+int Channel::addOperator(User* user) {
+	if (!user) return -1;
+
+	std::string nickname = user->getNickname();
+
+	// 1. if user is in the channel members.
+	if (_channelMembers.find(nickname) == _channelMembers.end())
+		return 441; // ERR_USERNOTINCHANNEL
+
+	// 2. if user is already an operator
+	if (_channelOperators.find(nickname) != _channelOperators.end())
+		return 0;
+	
+	_channelOperators.insert(nickname);
+	return 0;
+}
+
+int Channel::removeOperator(User* user) {
+	if (!user) return -1;
+	std::string nickname = user->getNickname();
+
+	// 1. if the user is a channel member
+	if (_channelMembers.find(nickname) == _channelMembers.end()) {
+		return 441; // ERR_USERNOTINCHANNEL
+	}
+
+	// 2. if the user is an operator
+	if (_channelOperators.find(nickname) == _channelOperators.end())
+		return 0;
+
+	// 3. remove the user from the operator list
+	_channelOperators.erase(nickname);
+
+	return 0;
+}
+
+void Channel::broadcast(std::string msg, User* exceptUser) {
+	if (msg.empty()) return;
+	// it's safe to add the IRc standard newline character sequence("\r\n"),
+	// if it's not at the end of the message.
+	if (msg.find("\r\n") == std::string::npos)
+		msg += "\r\n";
+
+	std::map<std::string, User*>::iterator it;
+	for (it = _channelMembers.begin(); it != _channelMembers.end(); ++it) {
+		User* target = it->second;
+
+		// If user to exclude is specified and match the current target, skip.
+		if (exceptUser != NULL && target == exceptUser)
+			continue;
+
+		if (send(target->getFd(), msg.c_str(), msg.size(), 0) == -1)
+			std::cerr << "Broadcast send failed to: " << target->getNickname() << std::endl;
+	}
+}
