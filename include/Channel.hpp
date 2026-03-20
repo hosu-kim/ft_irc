@@ -70,7 +70,7 @@ class Channel {
 		/* I could use std::vector also, but when we search and kick a specific user,
 		   it's not effetive than std::map
 		     1. we have to search through users from beginning to end. that causes slow operation...
-		     2. To find duplicate users, every time we have to uterate through them 😢 */
+		     2. To find duplicate users, every time we have to iterate through them 😢 */
 		//       vv: nickname vv: user instance
 		std::map<std::string, User*> _channelMembers;
 		/* Key features of std::set
