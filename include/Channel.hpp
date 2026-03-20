@@ -15,9 +15,8 @@ TODOS:
 		   - [DONE] removeOperator(User* user);
 		3. message broadcast: except the sender, all Users receive the messages.
 		   - [DONE]broadcast(std::string msg, User* exceptUser)
-		4. mode change:
-		   - setMode()
-		   - checkMode()
+		4. mode setup:
+		   - [DONE]setMode()
 */
 
 #pragma once
@@ -35,32 +34,14 @@ TODOS:
 #include <poll.h>
 #include <signal.h>
 #include <map> // std::map
-#include <set>
+#include <set> // std::set
+#include <exception>
+#include <sstream>
 
 #include "User.hpp"
 
 class Channel {
-	public:
-		/* Orthodox Canonical Form */
-		// The constructor sets up _channelName and initializes member variables.
-		Channel();
-		Channel(std::string channelName, std::string channelPassword, std::string channelTopic, int userLimit);
-		Channel& operator=(const Channel& src);
-		~Channel();
-		//======================================================================
-		/* Member Functions */
-		int joinUser(User* user, std::string password);
-		int leaveUser(User* user);
-		size_t getMemberCount() const;
-		int addOperator(User* user);
-		int removeOperator(User* user);
-
-		void broadcast(std::string message, User* exceptUser);
-
-		// mode change member functions
-		int setMode(char mode, char op, std::string value, User* setter);
-
-	private:
+		private:
 		std::string _channelName;
 		std::string _channelPassword;
 		std::string _channelTopic;
@@ -79,4 +60,50 @@ class Channel {
 		   2. Sorts elements in ascending order
 		*/
 		std::set<std::string> _channelOperators;
+		// Mode flags
+		bool _isInviteOnly; // i mode
+		bool _isTopicRestricted; // t mode
+		bool _hasKey;
+		std::set<std::string> _invitedUsers;
+
+	public:
+		/* Orthodox Canonical Form */
+		// The constructor sets up _channelName and initializes member variables.
+		Channel();
+		Channel(std::string channelName, std::string channelPassword, std::string channelTopic, int userLimit);
+		Channel& operator=(const Channel& src);
+		~Channel();
+		//======================================================================
+		/* Member Functions */
+		int joinUser(User* user, std::string password);
+		int removeUser(User* user);
+		size_t getMemberCount() const;
+		int addOperator(User* user);
+		int removeOperator(User* user);
+
+		/* Except the sender(exceptUser), all members receive the message*/
+		void broadcast(std::string message, User* exceptUser);
+
+		// mode change member functions
+		User* findUserByNick(std::string nickname);
+		bool stringToInt(const std::string& str, int& result);
+		int setMode(char mode, char op, std::string value, User* setter);
+
+		class IRCException : public std::exception {
+			private:
+				int _errorCode;
+				std::string _message;
+
+			public:
+				IRCException(int code, const std::string& msg)
+				: _errorCode(code), _message(msg) {}
+
+				virtual const char* what() const throw() {
+					return _message.c_str();
+				}
+
+				int getErrorCode() const {
+					return _errorCode;
+				}
+ 		};
 };
