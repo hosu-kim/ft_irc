@@ -7,14 +7,12 @@ TODOS:
 		3. channel modes: i(invite-only), t(topic limit), k(password needed), l(user limit)
 	
 	# methods implementation
-		1. Join-leave: [Done]joinUser(User* user, std::string password); leaveUser(User* user);
-		2. permission control(add=remove): addOperator(User* user), removeOperator(User* user);
+		1. Join-leave: [DONE]joinUser(User* user, std::string password); [DONE]
+		leaveUser(User* user);
+		2. permission control(add-remove): addOperator(User* user), removeOperator(User* user);
 		3. message broadcase: broadcase(std::string msg, User* exceptUser)
 			except the sender, all Users receive the messages.
 		4. mode change: setMode(), checkMode()
-
-
-
 */
 
 #pragma once
