@@ -109,22 +109,24 @@ int Channel::removeOperator(User* user) {
 	return 0;
 }
 
+/* Except the sender(exceptUser), all members receive the message*/
 void Channel::broadcast(std::string msg, User* exceptUser) {
 	if (msg.empty()) return;
-	// it's safe to add the IRc standard newline character sequence("\r\n"),
+	// it's safe to add the IRC standard newline character sequence("\r\n"),
 	// if it's not at the end of the message.
+	// '\r'(Carriage Return): Sends the cursor to the beginning of the current line
 	if (msg.find("\r\n") == std::string::npos)
 		msg += "\r\n";
 
 	std::map<std::string, User*>::iterator it;
 	for (it = _channelMembers.begin(); it != _channelMembers.end(); ++it) {
-		User* target = it->second;
+		User* targetUser = it->second;
 
 		// If user to exclude is specified and match the current target, skip.
-		if (exceptUser != NULL && target == exceptUser)
+		if (exceptUser != NULL && targetUser == exceptUser)
 			continue;
 
-		if (send(target->getFd(), msg.c_str(), msg.size(), 0) == -1)
-			std::cerr << "Broadcast send failed to: " << target->getNickname() << std::endl;
+		if (send(targetUser->getFd(), msg.c_str(), msg.size(), 0) == -1)
+			std::cerr << "Broadcast send failed to: " << targetUser->getNickname() << std::endl;
 	}
 }

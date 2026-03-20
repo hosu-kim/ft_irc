@@ -13,9 +13,11 @@ TODOS:
 		2. permission control(add-remove):
 		   - [DONE] addOperator(User* user)
 		   - [DONE] removeOperator(User* user);
-		3. message broadcast: broadcast(std::string msg, User* exceptUser)
-			except the sender, all Users receive the messages.
-		4. mode change: setMode(), checkMode()
+		3. message broadcast: except the sender, all Users receive the messages.
+		   - [DONE]broadcast(std::string msg, User* exceptUser)
+		4. mode change:
+		   - setMode()
+		   - checkMode()
 */
 
 #pragma once
@@ -54,6 +56,9 @@ class Channel {
 		int removeOperator(User* user);
 
 		void broadcast(std::string message, User* exceptUser);
+
+		// mode change member functions
+		int setMode(char mode, char op, std::string value, User* setter);
 
 	private:
 		std::string _channelName;
