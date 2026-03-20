@@ -3,11 +3,16 @@
 /* ======================== Orthodox Canonical Form ========================= */
 Channel::Channel()
 	: _channelName("default"), _channelPassword(""),
-	 _channelTopic(""), _userLimit(0), _isInviteOnly(false), _isTopicRestricted(false) {}
+	 _channelTopic(""), _userLimit(0), _isInviteOnly(false),
+	 _isTopicRestricted(false), _hasKey(false) {}
 
 Channel::Channel(std::string channelName, std::string channelPassword, std::string channelTopic, int userLimit)
 	: _channelName(channelName), _channelPassword(channelPassword),
-	_channelTopic(channelTopic), _userLimit(userLimit), _isInviteOnly(false), _isTopicRestricted(false) {}
+	_channelTopic(channelTopic), _userLimit(userLimit), _isInviteOnly(false),
+	_isTopicRestricted(false) {
+		if (channelPassword != "") _hasKey = true;
+		else _hasKey = false;
+	}
 
 Channel::Channel(const Channel& src) {
 	*this = src;
@@ -28,6 +33,7 @@ Channel& Channel::operator=(const Channel& src) {
 		this->_isInviteOnly = src._isInviteOnly;
 		this->_isTopicRestricted = src._isTopicRestricted;
 		this->_invitedUsers = src._invitedUsers;
+		this->_hasKey = src._hasKey;
 	}
 	return *this;
 }
@@ -45,14 +51,14 @@ int Channel::joinUser(User* user, std::string password) {
 	if (_channelMembers.find(user->getNickname()) != _channelMembers.end())
 		return 0; // Success
 
-	// 2. checks Invite-only mode (+i)
+	// 2. if invite-only mode enabled (+i)
 	if (this->_isInviteOnly) {
 		if (_invitedUsers.find(user->getNickname()) == _invitedUsers.end())
 			return 473;
 	}
 
 	// 3. password validation (only when +k[password needed] mode is enabled)
-	if (!this->_channelPassword.empty() && this->_channelPassword != password)
+	if (this->_hasKey && this->_channelPassword != password)
 		return 475; // ERR_BADCHANNELKEY
 
 	// 4. user limit check (only when +l[num of user limited] mode is enabled)
@@ -66,7 +72,7 @@ int Channel::joinUser(User* user, std::string password) {
 	return 0; // Success
 }
 
-int Channel::leaveUser(User* user) {
+int Channel::removeUser(User* user) {
 	// 1. user exists in the channel
 	std::string nickname = user->getNickname();
 	if (_channelMembers.find(nickname) == _channelMembers.end())
@@ -182,8 +188,10 @@ int Channel::setMode(char mode, char op, std::string value, User* setter) {
 				if (isPlus) {
 					if (value.empty()) throw IRCException(461, "ERR_NEEDMOREPARAMS");
 					_channelPassword = value;
+					_hasKey = true;
 				} else {
 					_channelPassword = "";
+					_hasKey = false;
 				}
 				break;
 
@@ -218,4 +226,5 @@ int Channel::setMode(char mode, char op, std::string value, User* setter) {
 	}
 		return 0;
 }
+
 

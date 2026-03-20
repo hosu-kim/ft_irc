@@ -60,8 +60,10 @@ class Channel {
 		   2. Sorts elements in ascending order
 		*/
 		std::set<std::string> _channelOperators;
+		// Mode flags
 		bool _isInviteOnly; // i mode
 		bool _isTopicRestricted; // t mode
+		bool _hasKey;
 		std::set<std::string> _invitedUsers;
 
 	public:
@@ -74,11 +76,12 @@ class Channel {
 		//======================================================================
 		/* Member Functions */
 		int joinUser(User* user, std::string password);
-		int leaveUser(User* user);
+		int removeUser(User* user);
 		size_t getMemberCount() const;
 		int addOperator(User* user);
 		int removeOperator(User* user);
 
+		/* Except the sender(exceptUser), all members receive the message*/
 		void broadcast(std::string message, User* exceptUser);
 
 		// mode change member functions
