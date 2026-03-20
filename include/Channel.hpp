@@ -7,14 +7,17 @@ TODOS:
 		3. channel modes: i(invite-only), t(topic limit), k(password needed), l(user limit)
 	
 	# methods implementation
-		1. Join-leave: joinUser(User* user); leaveUser(User* user);
-		2. permission control(add=remove): addOperator(User* user), removeOperator(User* user);
-		3. message broadcase: broadcase(std::string msg, User* exceptUser)
-			except the sender, all Users receive the messages.
-		4. mode change: setMode(), checkMode()
-
-
-
+		1. Join-leave: 
+		   - [DONE]joinUser(User* user, std::string password);
+		   - [DONE]leaveUser(User* user);
+		2. permission control(add-remove):
+		   - [DONE] addOperator(User* user)
+		   - [DONE] removeOperator(User* user);
+		3. message broadcast: except the sender, all Users receive the messages.
+		   - [DONE]broadcast(std::string msg, User* exceptUser)
+		4. mode change:
+		   - setMode()
+		   - checkMode()
 */
 
 #pragma once
@@ -32,6 +35,7 @@ TODOS:
 #include <poll.h>
 #include <signal.h>
 #include <map> // std::map
+#include <set>
 
 #include "User.hpp"
 
@@ -40,22 +44,39 @@ class Channel {
 		/* Orthodox Canonical Form */
 		// The constructor sets up _channelName and initializes member variables.
 		Channel();
-		Channel(std::string channelName);
-		Channel(const Channel& src);
+		Channel(std::string channelName, std::string channelPassword, std::string channelTopic, int userLimit);
 		Channel& operator=(const Channel& src);
 		~Channel();
 		//======================================================================
 		/* Member Functions */
-		int joinUser(User* user);
+		int joinUser(User* user, std::string password);
+		int leaveUser(User* user);
+		size_t getMemberCount() const;
+		int addOperator(User* user);
+		int removeOperator(User* user);
+
+		void broadcast(std::string message, User* exceptUser);
+
+		// mode change member functions
+		int setMode(char mode, char op, std::string value, User* setter);
 
 	private:
 		std::string _channelName;
 		std::string _channelPassword;
 		std::string _channelTopic;
+		// // for the channel mode `l`(user limit)
+		// if _userLimit is 0, unlimited user entry allowed
+		int _userLimit;
 		/* I could use std::vector also, but when we search and kick a specific user,
 		   it's not effetive than std::map
 		     1. we have to search through users from beginning to end. that causes slow operation...
 		     2. To find duplicate users, every time we have to uterate through them 😢 */
 		//       vv: nickname vv: user instance
 		std::map<std::string, User*> _channelMembers;
+		/* Key features of std::set
+		   1. ***Duplicates not allowed***: even if the same value is entered twice,
+		                                    only one is stored.
+		   2. Sorts elements in ascending order
+		*/
+		std::set<std::string> _channelOperators;
 };

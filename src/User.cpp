@@ -30,6 +30,10 @@ std::string User::getHostmask() const
     return (hostmask);
 }
 
+int User::getFd() const {
+    return (fd);
+}
+
 /* **************** SETTERS ************************ */
 
 void User::setName(std::string _name)

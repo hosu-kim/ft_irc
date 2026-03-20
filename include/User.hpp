@@ -25,6 +25,7 @@ class User
         std::string getNickname() const;
         std::string getFullname() const;
         std::string getHostmask() const;
+        int getFd() const;
 
         void setName(std::string _name);
         void setNickname(std::string _nickname);
