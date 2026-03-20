@@ -2,12 +2,12 @@
 
 /* ======================== Orthodox Canonical Form ========================= */
 Channel::Channel()
-	: _channelName("default"), _channelPassword("default"),
-	 _channelTopic("default"), _userLimit(0) {}
+	: _channelName("default"), _channelPassword(""),
+	 _channelTopic(""), _userLimit(0), _isInviteOnly(false), _isTopicRestricted(false) {}
 
 Channel::Channel(std::string channelName, std::string channelPassword, std::string channelTopic, int userLimit)
 	: _channelName(channelName), _channelPassword(channelPassword),
-	_channelTopic(channelTopic), _userLimit(userLimit) {}
+	_channelTopic(channelTopic), _userLimit(userLimit), _isInviteOnly(false), _isTopicRestricted(false) {}
 
 Channel::Channel(const Channel& src) {
 	*this = src;
@@ -22,7 +22,12 @@ Channel& Channel::operator=(const Channel& src) {
 		this->_channelName = src._channelName;
 		this->_channelPassword = src._channelPassword;
 		this->_channelTopic = src._channelTopic;
+		this->_userLimit = src._userLimit;
 		this->_channelMembers = src._channelMembers;
+		this->_channelOperators = src._channelOperators;
+		this->_isInviteOnly = src._isInviteOnly;
+		this->_isTopicRestricted = src._isTopicRestricted;
+		this->_invitedUsers = src._invitedUsers;
 	}
 	return *this;
 }
@@ -40,17 +45,24 @@ int Channel::joinUser(User* user, std::string password) {
 	if (_channelMembers.find(user->getNickname()) != _channelMembers.end())
 		return 0; // Success
 
-	// 2. password validation (only when +k[password needed] mode is enabled)
+	// 2. checks Invite-only mode (+i)
+	if (this->_isInviteOnly) {
+		if (_invitedUsers.find(user->getNickname()) == _invitedUsers.end())
+			return 473;
+	}
+
+	// 3. password validation (only when +k[password needed] mode is enabled)
 	if (!this->_channelPassword.empty() && this->_channelPassword != password)
 		return 475; // ERR_BADCHANNELKEY
 
-	// 3. user limit check (only when +l[num of user limited] mode is enabled)
+	// 4. user limit check (only when +l[num of user limited] mode is enabled)
 	// if _userLimit is 0, unlimited user entry allowed
 	if (this->_userLimit > 0 && this->_channelMembers.size() >= (size_t)_userLimit)
 		return 471;
 
-	// 4. User entry approval
+	// 4. User entry approval and removes user from the invited users
 	_channelMembers[user->getNickname()] = user;
+	_invitedUsers.erase(user->getNickname());
 	return 0; // Success
 }
 
@@ -130,3 +142,80 @@ void Channel::broadcast(std::string msg, User* exceptUser) {
 			std::cerr << "Broadcast send failed to: " << targetUser->getNickname() << std::endl;
 	}
 }
+
+// ============================= Helper functions for setMode =============================
+User* Channel::findUserByNick(std::string nickname) {
+	std::map<std::string, User*>::iterator it = _channelMembers.find(nickname);
+	if (it == _channelMembers.end())
+		return NULL;
+	return it->second;
+}
+
+bool Channel::stringToInt(const std::string& str, int& result) {
+	std::stringstream ss(str);
+
+	if (!(ss >> result) || !ss.eof()) {
+		return false;
+	}
+	return true;
+}
+
+// mode: 'k': password needed, 'l': user limit, 'o': operator setup, 't': topic limit
+// op: '+'(add/enable), '-'(remove/disable)
+// value: password / number of user limit / a specific nickname
+int Channel::setMode(char mode, char op, std::string value, User* setter) {
+	if (_channelOperators.find(setter->getNickname()) == _channelOperators.end())
+		return 482;
+	bool isPlus = (op == '+');
+
+	try {
+		switch (mode) {
+			case 'i':
+				_isInviteOnly = isPlus;
+				break;
+			
+			case 't':
+				_isTopicRestricted = isPlus;
+				break;
+
+			case 'k': // Key(password)
+				if (isPlus) {
+					if (value.empty()) throw IRCException(461, "ERR_NEEDMOREPARAMS");
+					_channelPassword = value;
+				} else {
+					_channelPassword = "";
+				}
+				break;
+
+			case 'l': // Limit (user limit)
+				if (isPlus) {
+					if (value.empty()) throw IRCException(461, "ERR_NEEDMOREPARAMS");
+
+					int limit;
+					if (!stringToInt(value, limit)) {
+						throw IRCException(472, "ERR_UNKNOWNMORE");
+					}
+					_userLimit = (limit < 0) ? 0 : limit;
+				} else {
+					_userLimit = 0;
+				}
+				break;
+			
+			case 'o':
+			{
+				if (value.empty()) throw IRCException(461, "ERR_NEEDMOREPARAMS");
+				User* target = findUserByNick(value);
+				if (!target) throw IRCException(401, "ERR_NOSUCHNICK");
+
+				return isPlus ? this->addOperator(target) : this->removeOperator(target);
+			}
+			
+			default:
+				throw IRCException(472, "ERR_UNKNOWNMODE");
+		}
+	} catch (const IRCException& e) {
+		return e.getErrorCode();
+	}
+		return 0;
+}
+
