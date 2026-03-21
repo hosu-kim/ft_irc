@@ -41,7 +41,7 @@ TODOS:
 #include "User.hpp"
 
 class Channel {
-		private:
+	private:
 		std::string _channelName;
 		std::string _channelPassword;
 		std::string _channelTopic;

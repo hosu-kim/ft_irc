@@ -32,6 +32,16 @@ class User
         void setFullname(std::string _fullname);
         void setHostmask(std::string _hostmask);
 
+        void    setRegistered(bool flag);
+        void    setHasUser(bool flag);
+        void    setHasNick(bool flag);
+        void    setPassOK(bool flag);
+
+        bool    getRegistered();
+        bool    getHasUser();
+        bool    getHasNick();
+        bool    getPassOK();
+
 	private:
 
 		std::string name;

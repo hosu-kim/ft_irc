@@ -36,15 +36,24 @@
 // Example: PRIVMSG #chan :hello world
 
 
-class Command
+class ACommand
 {
     private:
-        std::string                 cmd;
-        std::vector<std::string>    params;
+        // e.g., KICK #channel target_user
+        //       cmd: "NICK"
+        std::string                 _cmd;
+        //       params: ["#channel", "target_user"]
+        std::vector<std::string>    _params;
+
+    protected:
+        // getters
+        const std::string& getParam(size_t index);
+        size_t getParamCount() const;
+
     public:
-        Command(){};
+        ACommand(){};
 
         static std::vector<std::string> splitBySpaces(std::string str); // is static necessary?
-        
+
   //      void    commandDispatcher(std::string cmd);
 };
