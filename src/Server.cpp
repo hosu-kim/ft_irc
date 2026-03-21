@@ -1,5 +1,4 @@
 #include "Server.hpp"
-#include "Command.hpp"
 
 Server::Server(char **argv) : port(atoi(argv[1])), password(argv[2])
 {
@@ -95,10 +94,18 @@ void    Server::newClient(void)
             user_poll[fd_count].events = POLLIN;
             fd_count++;
             users[user_fd] = User(user_fd);
-            std::string welcome = ":" + std::string("localhost") + " 001 * :Welcome to our IRC server\r\n";
-            send(user_fd, welcome.c_str(), welcome.size(), 0);
         }
     }
+}
+
+User* Server::findUserByNick(const std::string& nick)
+{
+    for (int i = 0; i < users.size(); i++)
+    {
+        if (users[i].getNickname() == nick)
+            return &users[i];
+    }
+    return NULL;
 }
 
 void    Server::clientRequest(int i)
@@ -109,13 +116,11 @@ void    Server::clientRequest(int i)
     int fd = user_poll[i].fd;
 
     if (bytes > 0)
-    //          Client sent data -> append to user buffer, parse commands
+    // Client sent data -> append to user buffer, parse commands
     {
         std::string message(buffer, bytes);
 
-        // users[fd].buffer += message;
-
-        users[user_poll[i].fd].buffer += message;
+        users[fd].buffer += message;
 
         //            PARSE COMMANDS !!!!!!!!!!!!!!!!!!!
         // while (buffer contains "\r\n")   ------ size_t pos = buffer.find("\r\n");
@@ -139,27 +144,92 @@ void    Server::clientRequest(int i)
             if (line.empty())
                 continue;
 
-            std::vector<std::string> tokens = Command::splitBySpaces(line);
+            std::vector<std::string> tokens = ACommand::splitBySpaces(line);
             if (tokens.empty())
                 continue;
 
             std::string cmd = tokens[0];
-            if (cmd == "NICK")
+            if (cmd == "PASS")
             {
-                if (tokens.size() > 1)
-                    users[fd].setNickname(tokens[1]);
+                if (tokens.size() < 2)
+                    continue;
+                if (tokens[1] == password)
+                    users[fd].setPassOK(true);
             }
             else if (cmd == "USER")
             {
                 if (tokens.size() > 4)
+                {
                     users[fd].setFullname(tokens[4]);
+                    users[fd].setHasUser(true);
+                }
             }
-            
-            //DEBUG:
-            std::cout << "Received: [" << line << "]" << std::endl; 
+            else if (cmd == "NICK")
+            {
+                if (tokens.size() > 1)
+                {
+                    users[fd].setNickname(tokens[1]);
+                    users[fd].setHasNick(true);
+                }
+            }
+            else if (cmd == "PRIVMSG")
+            {
+                // 1. Validate input:
 
-            //Command cmd(line);
-            //cmd.execute(users[fd], *this);
+                if (tokens.size() < 3)
+                {
+                //      send error: ERR_NEEDMOREPARAMS
+                      continue;
+                }
+
+                if (!users[fd].getRegistered())
+                      return;
+
+                // 2. Extract data:
+
+                std::string target = tokens[1];
+                std::string text = tokens[2];
+
+                if (target[0] == '#')
+                {
+                //    Channel ch; // set to the right channel
+                //      ->channel message (LATER)
+                //    std::string msg = ":" + text;
+                    //ch.broadcast(msg, users[fd]);
+                // TODO later
+                    continue;
+                }
+                
+                // else -> user message
+
+                else
+                {
+                    User *targetUser = findUserByNick(target);
+                    if (!targetUser)
+                    {
+                        std::string err = ":localhost 401 " + users[fd].getNickname() + " " + target +" :No such nick\r\n";
+                        send(fd, err.c_str(), err.size(), 0);
+                        continue;
+                    }
+                    int target_fd = (*targetUser).getFd();
+                    std::string msg = ":" + users[fd].getNickname() + " PRIVMSG " + target + " :" + text + "\r\n";
+                    send(target_fd, msg.c_str(), msg.size(), 0);
+                }
+                // 3. Find user (user message):
+                // User *targetUser = findUserByNick(target); ------- implement this (loop through users map)
+                //         then send message: 
+                //              std::string msg = ":" + users[fd].getNickName() + " PRIVMSG " + target + " :" + text + "\r\n";
+                //              send(target_fd, msg.c_str(), msg.size(), 0);
+
+                // 4. Channel case - later (use Channel::broadcast())
+            }
+
+            if (!users[fd].getRegistered() && users[fd].getPassOK() && users[fd].getHasNick() && users[fd].getHasUser())
+            {
+                users[fd].setRegistered(true);
+                std::string welcome = ":" + std::string("localhost") + " 001 " + users[fd].getNickname() + " :Welcome to our IRC server\r\n";
+                send(fd, welcome.c_str(), welcome.size(), 0);
+            }
         }
     }
     else if (bytes == 0)

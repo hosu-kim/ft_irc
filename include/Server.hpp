@@ -14,7 +14,8 @@
 #include <signal.h>
 
 #include "User.hpp"
-#include "Command.hpp"
+#include "commands/ACommand.hpp"
+#include "Channel.hpp"
 
 #include <map>
 #include <exception>
@@ -42,6 +43,8 @@ class Server
 		void	newClient(void);
 		void	clientRequest(int i);
 		void	removeUser(int i);
+
+		User*	findUserByNick(const std::string& nick);
 
 		class RunTimeError: public std::exception
 		{

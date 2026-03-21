@@ -4,7 +4,11 @@ FILES =	main.cpp \
 		User.cpp \
 		Server.cpp \
 		Channel.cpp \
-		Command.cpp \
+		commands/ACommand.cpp \
+		commands/CommandINVITE.cpp \
+		commands/CommandKICK.cpp \
+		commands/CommandMODE.cpp \
+		commands/CommandTOPIC.cpp
 
 SRC_DIR = src
 OBJ_DIR = .obj
@@ -15,25 +19,22 @@ OBJS = $(addprefix $(OBJ_DIR)/, $(FILES:.cpp=.o))
 
 COMPILER = c++
 #FLAGS = -Wall -Wextra -Werror -g -std=c++98 -I$(INC_DIR)
-FLAGS = -std=c++98 -I$(INC_DIR)
+FLAGS = -std=c++98 -I$(INC_DIR) -I$(INC_DIR)/commands
 RM = rm -rf
 
 all: $(NAME)
 
-$(NAME): $(OBJ_DIR) $(OBJS)
+$(NAME): $(OBJS)
 	@echo "Compiling..."
 	@$(COMPILER) $(FLAGS) $(OBJS) -o $(NAME)
 	@echo "Compilation successful"
 
-$(OBJ_DIR):
-	@mkdir -p $(OBJ_DIR)
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	@$(COMPILER) $(FLAGS) -c $< -o $@
 
 clean:
 	@echo "Cleaning"
-	@$(RM) $(OBJS)
 	@$(RM) $(OBJ_DIR)
 
 fclean: clean

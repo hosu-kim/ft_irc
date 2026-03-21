@@ -41,7 +41,7 @@ TODOS:
 #include "User.hpp"
 
 class Channel {
-		private:
+	private:
 		std::string _channelName;
 		std::string _channelPassword;
 		std::string _channelTopic;
@@ -71,6 +71,10 @@ class Channel {
 		// The constructor sets up _channelName and initializes member variables.
 		Channel();
 		Channel(std::string channelName, std::string channelPassword, std::string channelTopic, int userLimit);
+<<<<<<< HEAD
+=======
+		Channel(const Channel& src);
+>>>>>>> e66b3e4b8f9d4d1dbba14e90d1022aa8b73ac04d
 		Channel& operator=(const Channel& src);
 		~Channel();
 		//======================================================================
@@ -98,6 +102,11 @@ class Channel {
 				IRCException(int code, const std::string& msg)
 				: _errorCode(code), _message(msg) {}
 
+<<<<<<< HEAD
+=======
+				virtual ~IRCException() throw() {}
+
+>>>>>>> e66b3e4b8f9d4d1dbba14e90d1022aa8b73ac04d
 				virtual const char* what() const throw() {
 					return _message.c_str();
 				}

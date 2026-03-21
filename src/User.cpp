@@ -34,6 +34,26 @@ int User::getFd() const {
     return (fd);
 }
 
+bool    User::getRegistered()
+{
+    return (registered);
+}
+
+bool    User::getHasNick()
+{
+    return (has_nick);
+}
+
+bool    User::getHasUser()
+{
+    return (has_user);
+}
+
+bool    User::getPassOK()
+{
+    return (pass_ok);
+}
+
 /* **************** SETTERS ************************ */
 
 void User::setName(std::string _name)
@@ -54,4 +74,21 @@ void User::setFullname(std::string _fullname)
 void User::setHostmask(std::string _hostmask) 
 {
     hostmask = _hostmask;
+}
+
+void    User::setRegistered(bool flag)
+{
+    registered = flag;
+}
+void    User::setHasUser(bool flag)
+{
+    has_user = flag;
+}
+void    User::setHasNick(bool flag)
+{
+    has_nick = flag;
+}
+void    User::setPassOK(bool flag)
+{
+    pass_ok = flag;
 }
