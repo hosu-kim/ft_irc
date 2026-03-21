@@ -1,5 +1,4 @@
 #include "Server.hpp"
-#include "Command.hpp"
 
 Server::Server(char **argv) : port(atoi(argv[1])), password(argv[2])
 {

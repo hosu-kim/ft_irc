@@ -1,10 +1,10 @@
-#include "Command.hpp"
+#include "commands/ACommand.hpp"
 #include "User.hpp"
 
 std::vector<std::string> Command::splitBySpaces(std::string str)
 {
 	std::vector<std::string> result;
-	int start, end = 0;
+	int	start = 0, end = 0;
 
 	while ((start = str.find_first_not_of(' ', end)) != std::string::npos)
     {

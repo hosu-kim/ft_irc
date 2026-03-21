@@ -14,7 +14,7 @@
 #include <signal.h>
 
 #include "User.hpp"
-#include "Command.hpp"
+#include "commands/ACommand.hpp"
 
 #include <map>
 #include <exception>

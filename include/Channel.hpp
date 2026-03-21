@@ -71,6 +71,7 @@ class Channel {
 		// The constructor sets up _channelName and initializes member variables.
 		Channel();
 		Channel(std::string channelName, std::string channelPassword, std::string channelTopic, int userLimit);
+		Channel(const Channel& src);
 		Channel& operator=(const Channel& src);
 		~Channel();
 		//======================================================================
@@ -97,6 +98,8 @@ class Channel {
 			public:
 				IRCException(int code, const std::string& msg)
 				: _errorCode(code), _message(msg) {}
+
+				virtual ~IRCException() throw() {}
 
 				virtual const char* what() const throw() {
 					return _message.c_str();

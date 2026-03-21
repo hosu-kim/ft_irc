@@ -4,7 +4,7 @@ FILES =	main.cpp \
 		User.cpp \
 		Server.cpp \
 		Channel.cpp \
-		Command.cpp \
+		commands/ACommand.cpp \
 
 SRC_DIR = src
 OBJ_DIR = .obj
@@ -27,6 +27,7 @@ $(NAME): $(OBJ_DIR) $(OBJS)
 
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(OBJ_DIR)/commands
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 	@$(COMPILER) $(FLAGS) -c $< -o $@
