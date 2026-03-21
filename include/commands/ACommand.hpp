@@ -45,6 +45,6 @@ class Command
         Command(){};
 
         static std::vector<std::string> splitBySpaces(std::string str); // is static necessary?
-
+        
   //      void    commandDispatcher(std::string cmd);
 };
