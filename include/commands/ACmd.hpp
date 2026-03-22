@@ -16,7 +16,7 @@
 
 #include "User.hpp"
 #include "Server.hpp"
-#include "Channel.hpp"
+#include "ACmd.hpp"
 
 // Parser logic:
 // DONE 1. Split by spaces
@@ -36,24 +36,36 @@
 // Example: PRIVMSG #chan :hello world
 
 
-class ACommand
+class ACmd
 {
-    private:
-        // e.g., KICK #channel target_user
-        //       cmd: "NICK"
-        std::string                 _cmd;
-        //       params: ["#channel", "target_user"]
-        std::vector<std::string>    _params;
+	private:
+		// e.g., KICK #channel target_user
+		//       cmd: "NICK"
+		std::string					_cmd;
+		//       params: ["#channel", "target_user"]
+		std::vector<std::string>	_params;
+		ACmd();
 
-    protected:
-        // getters
-        const std::string& getParam(size_t index);
-        size_t getParamCount() const;
+	protected:
+		// child class uses this parameterized constructor.
+		ACmd(std::string cmd, std::vector<std::string> params);
 
-    public:
-        ACommand(){};
+		// getters
+		const std::string& getParam(size_t index);
+		size_t getParamCount() const;
 
-        static std::vector<std::string> splitBySpaces(std::string str); // is static necessary?
+	public:
+		ACmd(const ACmd& other) = delete;
+		ACmd& operator=(const ACmd& ohter) = delete;
+		virtual ~ACmd() {}
 
+		// Pure Virtual Function: Child classes implement this funciton themselves :)
+		virtual void execute(User &user, Server &server) = 0;
+
+		// => this function to the CmdFactory as well
+		// static std::vector<std::string> splitBySpaces(std::string str); // is static necessary?
+
+		// => Hosu: better to implement this function below in the CmdFactory class
+		//          because ACmd only represents the parent of each child cmd class
   //      void    commandDispatcher(std::string cmd);
 };

@@ -1,14 +1,24 @@
 NAME = ircserv
 
-FILES =	main.cpp \
-		User.cpp \
-		Server.cpp \
-		Channel.cpp \
-		commands/ACommand.cpp \
-		commands/CommandINVITE.cpp \
-		commands/CommandKICK.cpp \
-		commands/CommandMODE.cpp \
-		commands/CommandTOPIC.cpp
+CORE_FILES =	main.cpp \
+				User.cpp \
+				Server.cpp \
+				Channel.cpp \
+
+CMD_FILES =	commands/ACmd.cpp \
+			commands/CmdINVITE.cpp \
+			commands/CmdJOIN.cpp \
+			commands/CmdKICK.cpp \
+			commands/CmdMODE.cpp \
+			commands/CmdNICK.cpp \
+			commands/CmdPASS.cpp \
+			commands/CmdPING.cpp \
+			commands/CmdPRIMSG.cpp \
+			commands/CmdQUIT.cpp \
+			commands/CmdTOPIC.cpp \
+			commands/CmdUSER.cpp
+
+FILES = $(CORE_FILES) $(CMD_FILES)
 
 SRC_DIR = src
 OBJ_DIR = .obj
