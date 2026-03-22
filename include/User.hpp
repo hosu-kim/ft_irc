@@ -16,31 +16,35 @@
 class User
 {
 	public:
-        User();
-        User(int user_fd);
+		User();
+		User(int user_fd);
 
-        std::string buffer;
+		std::string buffer;
 
-        std::string getName() const;
-        std::string getNickname() const;
-        std::string getFullname() const;
-        std::string getHostmask() const;
-        int getFd() const;
+		// GETTERS
+		std::string getName() const;
+		std::string getNickname() const;
+		std::string getFullname() const;
+		std::string getHostmask() const;
+		int getFd() const;
 
-        void setName(std::string _name);
-        void setNickname(std::string _nickname);
-        void setFullname(std::string _fullname);
-        void setHostmask(std::string _hostmask);
+		// SETTERS
+		void setName(std::string _name);
+		void setNickname(std::string _nickname);
+		void setFullname(std::string _fullname);
+		void setHostmask(std::string _hostmask);
 
-        void    setRegistered(bool flag);
-        void    setHasUser(bool flag);
-        void    setHasNick(bool flag);
-        void    setPassOK(bool flag);
+		void    setRegistered(bool flag);
+		void    setHasUser(bool flag);
+		void    setHasNick(bool flag);
+		void    setPassOK(bool flag);
 
-        bool    getRegistered();
-        bool    getHasUser();
-        bool    getHasNick();
-        bool    getPassOK();
+		bool    getRegistered();
+		bool    getHasUser();
+		bool    getHasNick();
+		bool    getPassOK();
+
+		void reply(std::string msg);
 
 	private:
 
@@ -49,11 +53,11 @@ class User
 		std::string fullname;
 		std::string hostmask;
 
-        int fd;
+		int fd;
 
 		bool	registered;
-        bool    has_user;
-        bool    has_nick;
-        bool    pass_ok;
+		bool    has_user;
+		bool    has_nick;
+		bool    pass_ok;
 
 };

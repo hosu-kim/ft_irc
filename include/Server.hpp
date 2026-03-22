@@ -14,8 +14,9 @@
 #include <signal.h>
 
 #include "User.hpp"
-#include "commands/ACommand.hpp"
+#include "ACmd.hpp"
 #include "Channel.hpp"
+#include "CmdFactory.hpp"
 
 #include <map>
 #include <exception>
@@ -35,8 +36,12 @@ class Server
 	typedef std::map<int, User>	usermap;
 
 	public:
+		Server();
 		Server(char **argv);
 		~Server();
+
+		// GETTERS
+		std::string getName();
 
 		void 	run();
 		void 	setSocket();
@@ -62,12 +67,13 @@ class Server
 		};
 
 	private:
-		int 				port;
-		std::string 		password;
-		int					server_fd;
-		struct	sockaddr_in addr;
-		std::vector<pollfd> fds;
-		pollfd				user_poll[MAX_CLIENTS];
-		int					fd_count;
-		usermap				users;
+		std::string			_name;
+		int 				_port;
+		std::string 		_password;
+		int					_server_fd;
+		struct sockaddr_in	_addr;
+		std::vector<pollfd>	_fds;
+		pollfd				_user_poll[MAX_CLIENTS];
+		int					_fd_count;
+		usermap				_users;
 };

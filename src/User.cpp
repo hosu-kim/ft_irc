@@ -12,83 +12,90 @@ fd(user_fd)
 
 std::string User::getName() const
 {
-    return (name);
+	return (name);
 }
 
 std::string User::getFullname() const
 {
-    return (fullname);
+	return (fullname);
 }
 
 std::string User::getNickname() const
 {
-    return (nickname);
+	return (nickname);
 }
 
 std::string User::getHostmask() const
 {
-    return (hostmask);
+	return (hostmask);
 }
 
 int User::getFd() const {
-    return (fd);
+	return (fd);
 }
 
 bool    User::getRegistered()
 {
-    return (registered);
+	return (registered);
 }
 
 bool    User::getHasNick()
 {
-    return (has_nick);
+	return (has_nick);
 }
 
 bool    User::getHasUser()
 {
-    return (has_user);
+	return (has_user);
 }
 
 bool    User::getPassOK()
 {
-    return (pass_ok);
+	return (pass_ok);
 }
 
 /* **************** SETTERS ************************ */
 
 void User::setName(std::string _name)
 {
-    name = _name;
+	name = _name;
 }
 
 void User::setNickname(std::string _nickname) 
 {
-    nickname = _nickname;
+	nickname = _nickname;
 }
 
 void User::setFullname(std::string _fullname) 
 {
-    fullname = _fullname;
+	fullname = _fullname;
 }
 
 void User::setHostmask(std::string _hostmask) 
 {
-    hostmask = _hostmask;
+	hostmask = _hostmask;
 }
 
 void    User::setRegistered(bool flag)
 {
-    registered = flag;
+	registered = flag;
 }
 void    User::setHasUser(bool flag)
 {
-    has_user = flag;
+	has_user = flag;
 }
 void    User::setHasNick(bool flag)
 {
-    has_nick = flag;
+	has_nick = flag;
 }
 void    User::setPassOK(bool flag)
 {
-    pass_ok = flag;
+	pass_ok = flag;
+}
+
+/* **************** MEMBER FUNCTIONS ************************ */
+void reply(std::string msg) {
+	std::string fullMsg = msg + "\r\n";
+	// ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+	send(this->_fd, fullMsg.c_str(), fullMsg.size(), 0);
 }
