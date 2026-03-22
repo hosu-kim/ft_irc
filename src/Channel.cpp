@@ -6,13 +6,12 @@ Channel::Channel()
 	 _channelTopic(""), _userLimit(0), _isInviteOnly(false),
 	 _isTopicRestricted(false), _hasKey(false) {}
 
-Channel::Channel(std::string channelName, std::string channelPassword, std::string channelTopic, int userLimit)
-	: _channelName(channelName), _channelPassword(channelPassword),
-	_channelTopic(channelTopic), _userLimit(userLimit), _isInviteOnly(false),
-	_isTopicRestricted(false) {
-		if (channelPassword != "") _hasKey = true;
-		else _hasKey = false;
-	}
+Channel::Channel(const std::string& channelName, User* channelOperator)
+	: _channelName(channelName), _channelPassword("")
+{
+	this->_channelMembers[channelOperator->getNickname()] = channelOperator;
+	this->_channelOperators.insert(channelOperator->getNickname());
+}
 
 Channel::Channel(const Channel& src) {
 	*this = src;

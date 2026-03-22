@@ -33,7 +33,8 @@
 
 class Server
 {
-	typedef std::map<int, User>	usermap;
+	typedef std::map<int, User>				user_map;
+	typedef std::map<std::string, Channel*>	channel_map;
 
 	public:
 		Server();
@@ -49,7 +50,9 @@ class Server
 		void	clientRequest(int i);
 		void	removeUser(int i);
 
-		User*	findUserByNick(const std::string& nick);
+		User*		findUserByNick(const std::string& nick);
+		Channel*	findChannel(std::string channelName);
+		Channel*	createChannel(std::string channelName, User* channelOperator);
 
 		class RunTimeError: public std::exception
 		{
@@ -75,5 +78,6 @@ class Server
 		std::vector<pollfd>	_fds;
 		pollfd				_user_poll[MAX_CLIENTS];
 		int					_fd_count;
-		usermap				_users;
+		user_map			_users;
+		channel_map			_channels;
 };

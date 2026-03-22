@@ -16,6 +16,7 @@ Server::~Server()
 	std::cout << "Server shutting down..." << std::endl;
 	close(_server_fd);
 }
+//==============================================================================
 
 std::string Server::getName() { return _name; }
 
@@ -110,6 +111,27 @@ User* Server::findUserByNick(const std::string& nick)
 			return &_users[i];
 	}
 	return NULL;
+}
+
+/* finds the given channel name in the _channels map container
+   and return the corresponding iterator if not found return `NULL`
+ */
+Channel* Server::findChannel(std::string channelName) {
+	channel_map::iterator it = _channels.find(channelName);
+	if (it != _channels.end())
+		return it->second; // found
+	return NULL;
+}
+
+/* Creates a channel instance and add it into the _channels map container
+   and returns it
+*/
+Channel* Server::createChannel(std::string channelName, User* channelOperator) {
+	Channel* newChannel = new Channel(channelName, channelOperator);
+	_channels[channelName] = newChannel;
+
+	std::cout << "[Server] New channel created: " << channelName << " by " << channelOperator->getNickname() << std::endl;
+	return newChannel;
 }
 
 void    Server::clientRequest(int i)

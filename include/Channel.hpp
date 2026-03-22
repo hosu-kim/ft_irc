@@ -70,7 +70,7 @@ class Channel {
 		/* Orthodox Canonical Form */
 		// The constructor sets up _channelName and initializes member variables.
 		Channel();
-		Channel(std::string channelName, std::string channelPassword, std::string channelTopic, int userLimit);
+		Channel(const std::string& channelName, User* channelOperator);
 		Channel(const Channel& src);
 		Channel& operator=(const Channel& src);
 		~Channel();

@@ -8,8 +8,6 @@ example: INVITE friend123 #42prague
 
 #pragma once
 
-
-
 #include "ACmd.hpp"
 
 class CmdInvite : public ACmd

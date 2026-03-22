@@ -1,9 +1,8 @@
-/* 
-INVITE: Invites the given user to the given channel.
+/* INVITE: Invites the given user to the given channel.
 
-Syntax: INVITE <nickname> <channel>
+   Syntax: INVITE <nickname> <channel>
 
-example: INVITE friend123 #42prague
+   example: INVITE friend123 #42prague
 */
 
 #include "CmdINVITE.hpp"
@@ -15,6 +14,8 @@ void CmdInvite::execute(User &user, Server &server) {
 		std::string msg = ":" + server.getName() + " 461" + user.getNickname()
 						  + " INVITE :Not enough parameters";
 		return;
+	} else if (getParamCount() > 3) {
+		// too many param given...
 	}
 	
 	std::string targetNick = getParam(0);
