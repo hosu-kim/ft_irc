@@ -42,8 +42,10 @@ class Server
 		~Server();
 
 		// GETTERS
-		std::string getName();
+		std::string getUserName() const;
+		std::string getServerName() const;
 
+		// MEMBER FUNCTIONS
 		void 	run();
 		void 	setSocket();
 		void	newClient(void);
@@ -70,7 +72,8 @@ class Server
 		};
 
 	private:
-		std::string			_name;
+		std::string			_serverName;
+		std::string			_userName;
 		int 				_port;
 		std::string 		_password;
 		int					_server_fd;

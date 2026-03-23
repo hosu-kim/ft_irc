@@ -1,4 +1,4 @@
-#pragma CMD_FACTORY_HPP
+#pragma once
 
 #include <iostream>
 #include <cstring>
@@ -15,6 +15,9 @@
 #include <vector>
 
 #include "ACmd.hpp"
+#include "CmdJOIN.hpp"
+
+class ACmd;
 
 class CmdFactory {
 	private:

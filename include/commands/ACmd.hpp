@@ -16,7 +16,7 @@
 
 #include "User.hpp"
 #include "Server.hpp"
-#include "ACmd.hpp"
+//#include "CmdFactory.hpp"
 
 // Parser logic:
 // DONE 1. Split by spaces
@@ -35,6 +35,7 @@
 
 // Example: PRIVMSG #chan :hello world
 
+class Server;
 
 class ACmd
 {
@@ -55,9 +56,11 @@ class ACmd
 		size_t getParamCount() const;
 
 	public:
-		ACmd(const ACmd& other) = delete;
-		ACmd& operator=(const ACmd& ohter) = delete;
-		virtual ~ACmd() {}
+		// No implementation of the copy constructor and copy assignment constructor.
+		// they are not used in abstract classes.
+		ACmd(const ACmd& other);
+		ACmd& operator=(const ACmd& ohter);
+		virtual ~ACmd();
 
 		// Pure Virtual Function: Child classes implement this funciton themselves :)
 		virtual void execute(User &user, Server &server) = 0;
@@ -67,5 +70,4 @@ class ACmd
 
 		// => Hosu: better to implement this function below in the CmdFactory class
 		//          because ACmd only represents the parent of each child cmd class
-  //      void    commandDispatcher(std::string cmd);
 };

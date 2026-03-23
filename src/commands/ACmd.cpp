@@ -9,7 +9,7 @@ ACmd::~ACmd() {}
 
 // getters
 // This function is used to check if user provides proper number of parameter
-// for example, KICK command needs two parameters (channel name, nickname),
+// for example, KICK command needs two parameters (channel userName, nickname),
 // 
 size_t ACmd::getParamCount() const {
 	return this->_params.size();
@@ -44,13 +44,4 @@ const std::string& ACmd::getParam(size_t index) {
 // 	return result;
 // }
 
-/*
-void    Command::commandDispatcher(std::string cmd)
-{
-	if (cmd == "PASS")
-		handlePass(User &, params);
-	else if (cmd == "NICK")
-		handleNickname();
-	else if (cmd == "USER")
-		handleUser();
-}*/
+

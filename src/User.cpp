@@ -1,18 +1,18 @@
 #include "User.hpp"
 
-User::User() : name(""), nickname(""), fullname(""), hostmask(""), registered(false), has_nick(false), has_user(false), pass_ok(false)
+User::User() : userName(""), nickname(""), fullname(""), hostName(""), registered(false), has_nick(false), has_user(false), pass_ok(false)
 {}
 
-User::User(int user_fd) : name(""), nickname(""), fullname(""), hostmask(""), registered(false),
+User::User(int user_fd) : userName(""), nickname(""), fullname(""), hostName(""), registered(false),
 fd(user_fd)
 {}
 
 
 /* ****************** GETTERS **************************** */
 
-std::string User::getName() const
+std::string User::getUserName() const
 {
-	return (name);
+	return (userName);
 }
 
 std::string User::getFullname() const
@@ -25,9 +25,9 @@ std::string User::getNickname() const
 	return (nickname);
 }
 
-std::string User::getHostmask() const
+std::string User::getHostName() const
 {
-	return (hostmask);
+	return (hostName);
 }
 
 int User::getFd() const {
@@ -56,46 +56,33 @@ bool    User::getPassOK()
 
 /* **************** SETTERS ************************ */
 
-void User::setName(std::string _name)
-{
-	name = _name;
-}
+void User::setName(std::string _userName)
+	{userName = _userName;}
 
 void User::setNickname(std::string _nickname) 
-{
-	nickname = _nickname;
-}
+	{nickname = _nickname;}
 
 void User::setFullname(std::string _fullname) 
-{
-	fullname = _fullname;
-}
+	{fullname = _fullname;}
 
 void User::setHostmask(std::string _hostmask) 
-{
-	hostmask = _hostmask;
-}
+	{hostName = _hostmask;}
 
 void    User::setRegistered(bool flag)
-{
-	registered = flag;
-}
-void    User::setHasUser(bool flag)
-{
-	has_user = flag;
-}
-void    User::setHasNick(bool flag)
-{
-	has_nick = flag;
-}
-void    User::setPassOK(bool flag)
-{
-	pass_ok = flag;
-}
+	{registered = flag;}
 
-/* **************** MEMBER FUNCTIONS ************************ */
-void reply(std::string msg) {
+void    User::setHasUser(bool flag)
+	{has_user = flag;}
+
+void    User::setHasNick(bool flag)
+	{has_nick = flag;}
+
+void    User::setPassOK(bool flag)
+	{pass_ok = flag;}
+
+/* **************** LOGIC FUNCTIONS ************************ */
+void User::reply(std::string msg) {
 	std::string fullMsg = msg + "\r\n";
 	// ssize_t send(int sockfd, const void *buf, size_t len, int flags);
-	send(this->_fd, fullMsg.c_str(), fullMsg.size(), 0);
+	send(fd, fullMsg.c_str(), fullMsg.size(), 0);
 }

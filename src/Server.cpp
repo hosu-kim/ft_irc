@@ -1,9 +1,9 @@
 #include "Server.hpp"
 
 // ========================== ORTHODOX CANONICAL FORM ==========================
-Server::Server() : _name("ft_irc.com"), _port(0), _server_fd(-1), _fd_count(0) {}
+Server::Server() : _userName("localhost"), _port(0), _server_fd(-1), _fd_count(0) {}
 
-Server::Server(char **argv) : _name("ft_irc.com"), _port(atoi(argv[1])), _password(argv[2])
+Server::Server(char **argv) : _userName("localhost"), _port(atoi(argv[1])), _password(argv[2])
 {
 	if (_port <= 0 || _port > MAX_PORT_NUMBER)
 		throw Server::RunTimeError("Invalid port.");
@@ -18,7 +18,9 @@ Server::~Server()
 }
 //==============================================================================
 
-std::string Server::getName() { return _name; }
+/* ***GETTERS*** */
+std::string Server::getUserName() const { return _userName; }
+std::string Server::getServerName() const { return _serverName; }
 
 void Server::setSocket()
 {
@@ -105,15 +107,15 @@ void    Server::newClient(void)
 
 User* Server::findUserByNick(const std::string& nick)
 {
-	for (int i = 0; i < _users.size(); i++)
+	for (std::map<int, User>::iterator it = _users.begin(); it != _users.end(); ++it)
 	{
-		if (_users[i].getNickname() == nick)
-			return &_users[i];
+		if (it->second.getNickname() == nick)
+			return &(it->second);
 	}
 	return NULL;
 }
 
-/* finds the given channel name in the _channels map container
+/* finds the given channel userName in the _channels map container
    and return the corresponding iterator if not found return `NULL`
  */
 Channel* Server::findChannel(std::string channelName) {
@@ -148,7 +150,6 @@ void    Server::clientRequest(int i)
 
 		_users[fd].buffer += message;
 
-		//            PARSE COMMANDS !!!!!!!!!!!!!!!!!!!
 		// while (buffer contains "\r\n")   ------ size_t pos = buffer.find("\r\n");
 		// {
 		//      extract one line ---------- substr(0, pos);
@@ -160,12 +161,18 @@ void    Server::clientRequest(int i)
 
 		while (true)
 		{
-			size_t pos = buf.find("\r\n");
+			//size_t pos = buf.find("\r\n");
+			size_t pos = buf.find("\n");
+
 			if (pos == std::string::npos)
 				break;
 			std::string line = buf.substr(0, pos);
 
-			buf.erase(0, pos + 2);
+			if (!line.empty() && line[line.size() - 1] == '\r')
+				line.erase(line.size() - 1);
+
+			//buf.erase(0, pos + 2);
+			buf.erase(0, pos + 1);
 
 			if (line.empty())
 				continue;
@@ -175,12 +182,21 @@ void    Server::clientRequest(int i)
 				continue;
 
 			std::string cmd = tokens[0];
+
+			std::cout << "cmd = " << tokens[0] << std::endl;
 			if (cmd == "PASS")
 			{
 				if (tokens.size() < 2)
 					continue;
 				if (tokens[1] == _password)
+				{
 					_users[fd].setPassOK(true);
+
+					//DEBUG
+					std::string temp1 = "Password set successfully. \r\n";
+					std::cout << temp1 << std::endl << "PasswordOK is: " << _users[fd].getPassOK() << std::endl;
+					//send(fd, temp1.c_str(), temp1.size(), 0);
+				}
 			}
 			else if (cmd == "USER")
 			{
@@ -188,6 +204,12 @@ void    Server::clientRequest(int i)
 				{
 					_users[fd].setFullname(tokens[4]);
 					_users[fd].setHasUser(true);
+
+					//DEBUG
+					std::string temp1 = "User set successfully. \r\n";
+					std::cout << temp1 << std::endl << "UserOK is: " << _users[fd].getHasUser() << std::endl;
+					std::cout << "User is: " << _users[fd].getFullname() << std::endl;
+					//send(fd, temp1.c_str(), temp1.size(), 0);
 				}
 			}
 			else if (cmd == "NICK")
@@ -196,6 +218,12 @@ void    Server::clientRequest(int i)
 				{
 					_users[fd].setNickname(tokens[1]);
 					_users[fd].setHasNick(true);
+
+					//DEBUG
+					std::string temp1 = "Nickname set successfully. \r\n";
+					std::cout << temp1 << std::endl << "NicknameOK is: " << _users[fd].getHasNick() << std::endl;
+					std::cout << "Nickname is: " << _users[fd].getNickname() << std::endl;
+					//send(fd, temp1.c_str(), temp1.size(), 0);
 				}
 			}
 			else if (cmd == "PRIVMSG")
@@ -209,7 +237,7 @@ void    Server::clientRequest(int i)
 				}
 
 				if (!_users[fd].getRegistered())
-					  return;
+					  continue;
 
 				// 2. Extract data:
 
@@ -248,6 +276,19 @@ void    Server::clientRequest(int i)
 				//              send(target_fd, msg.c_str(), msg.size(), 0);
 
 				// 4. Channel case - later (use Channel::broadcast())
+			}
+			else if (cmd == "JOIN")
+			{
+				if (tokens.size() < 2)
+					continue;
+
+				std::string channelName = tokens[1];
+				Channel* ch = findChannel(channelName);
+				if (!ch)
+					ch = createChannel(channelName, &_users[fd]);
+				int result = ch->addUser(&_users[fd], "");
+				std::string joinMsg = ":" + _users[fd].getNickname() + " JOIN " + channelName + "\r\n";
+				ch->broadcast(joinMsg, NULL);
 			}
 
 			if (!_users[fd].getRegistered() && _users[fd].getPassOK() && _users[fd].getHasNick() && _users[fd].getHasUser())
@@ -298,11 +339,9 @@ void Server::run()
 //      std::cout << "entering poll loop..." << std::endl;
 		if (poll(_user_poll, _fd_count, -1) < 0)          // change -1 to 0
 			throw Server::RunTimeError("Error: poll failed.");
-		std::cout << "Poll successful." << std::endl;
 		//unsigned int current_size = fd_count;
 		for (unsigned int i = 0; i < _fd_count; i++)
 		{
-			std::cout << "for loop inside the poll() loop" << std::endl;
 			try
 			{
 				if (_user_poll[i].revents & POLLIN)

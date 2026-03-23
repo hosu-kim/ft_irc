@@ -1,14 +1,14 @@
 /*
 TODOS:
 	# Data structure and configuration of properties (member variables).
-	[Done] 1. Declare member variables: channel name, channel password(key), topic
+	[Done] 1. Declare member variables: channel userName, channel password(key), topic
 		2. User management: list of Users... std::vector<User*> or std::map<int, User*>
 			- operator list: identify users with privilige separately.
 		3. channel modes: i(invite-only), t(topic limit), k(password needed), l(user limit)
 	
 	# methods implementation
 		1. Join-leave: 
-		   - [DONE]joinUser(User* user, std::string password);
+		   - [DONE]addUser(User* user, std::string password);
 		   - [DONE]leaveUser(User* user);
 		2. permission control(add-remove):
 		   - [DONE] addOperator(User* user)
@@ -45,9 +45,7 @@ class Channel {
 		std::string _channelName;
 		std::string _channelPassword;
 		std::string _channelTopic;
-		// // for the channel mode `l`(user limit)
-		// if _userLimit is 0, unlimited user entry allowed
-		int _userLimit;
+
 		/* I could use std::vector also, but when we search and kick a specific user,
 		   it's not effetive than std::map
 		     1. we have to search through users from beginning to end. that causes slow operation...
@@ -61,9 +59,11 @@ class Channel {
 		*/
 		std::set<std::string> _channelOperators;
 		// Mode flags
-		bool _isInviteOnly; // i mode
-		bool _isTopicRestricted; // t mode
-		bool _hasKey;
+		bool _isInviteOnly; // 'i' mode
+		bool _isTopicRestricted; // 't' mode
+		bool _hasKey; // 'k' mode
+		// if _memberLimit is 0, unlimited user entry allowed
+		size_t _memberLimit; // 'l' mode
 		std::set<std::string> _invitedUsers;
 
 	public:
@@ -75,10 +75,15 @@ class Channel {
 		Channel& operator=(const Channel& src);
 		~Channel();
 		//======================================================================
-		/* Member Functions */
-		int joinUser(User* user, std::string password);
-		int removeUser(User* user);
+		/* ***GETTERS*** */
+		bool hasMode(char mode) const;
 		size_t getMemberCount() const;
+		std::string getChannelKey() const;
+		size_t getMemberLimit() const;
+
+		/* ***LOGIC FUNCTIONS*** */
+		int addUser(User* user, std::string password);
+		int removeUser(User* user);
 		int addOperator(User* user);
 		int removeOperator(User* user);
 

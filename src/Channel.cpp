@@ -3,7 +3,7 @@
 /* ======================== Orthodox Canonical Form ========================= */
 Channel::Channel()
 	: _channelName("default"), _channelPassword(""),
-	 _channelTopic(""), _userLimit(0), _isInviteOnly(false),
+	 _channelTopic(""), _memberLimit(0), _isInviteOnly(false),
 	 _isTopicRestricted(false), _hasKey(false) {}
 
 Channel::Channel(const std::string& channelName, User* channelOperator)
@@ -26,7 +26,7 @@ Channel& Channel::operator=(const Channel& src) {
 		this->_channelName = src._channelName;
 		this->_channelPassword = src._channelPassword;
 		this->_channelTopic = src._channelTopic;
-		this->_userLimit = src._userLimit;
+		this->_memberLimit = src._memberLimit;
 		this->_channelMembers = src._channelMembers;
 		this->_channelOperators = src._channelOperators;
 		this->_isInviteOnly = src._isInviteOnly;
@@ -39,13 +39,40 @@ Channel& Channel::operator=(const Channel& src) {
 
 Channel::~Channel() {}
 
-/* ============================ Member Functions ============================ */
+/* ============================ MEMBER FUNCTIONS ============================ */
+
+/* ***GETTERS *** */
+// Returns the number of members in the channel
+size_t Channel::getMemberCount() const {
+	return _channelMembers.size();
+}
+
+/* If the channel is on 'i', 't', 'k' or 'l' mode, returns `true`,
+   if not, returns `false`
+*/
+bool Channel::hasMode(char mode) const {
+	switch(mode) {
+		case 'i': return _isInviteOnly;
+		case 't': return _isTopicRestricted;
+		case 'k': return !_channelPassword.empty();
+		case 'l': return _memberLimit > 0;
+		default: return false;
+	}
+}
+
+std::string Channel::getChannelKey() const
+	{return _channelPassword;}
+
+size_t Channel::getMemberLimit() const
+	{return _memberLimit;}
+
+/* ***Logic Functions*** */
 // RFC standards error code used:
 // https://www.rfc-editor.org/rfc/rfc2812.html
 // 475(ERR_BADCHANNELKEY): Wrong password for the channel
 // 471(ERR_CHANNELISFULL): User limit reached
 // 0: Success to join a user
-int Channel::joinUser(User* user, std::string password) {
+int Channel::addUser(User* user, std::string password) {
 	// 1. if user already exists in the channel
 	if (_channelMembers.find(user->getNickname()) != _channelMembers.end())
 		return 0; // Success
@@ -61,8 +88,8 @@ int Channel::joinUser(User* user, std::string password) {
 		return 475; // ERR_BADCHANNELKEY
 
 	// 4. user limit check (only when +l[num of user limited] mode is enabled)
-	// if _userLimit is 0, unlimited user entry allowed
-	if (this->_userLimit > 0 && this->_channelMembers.size() >= (size_t)_userLimit)
+	// if _memberLimit is 0, unlimited user entry allowed
+	if (this->_memberLimit > 0 && this->_channelMembers.size() >= (size_t)_memberLimit)
 		return 471;
 
 	// 4. User entry approval and removes user from the invited users
@@ -84,10 +111,6 @@ int Channel::removeUser(User* user) {
 	_channelOperators.erase(nickname);
 
 	return 0;
-}
-
-size_t Channel::getMemberCount() const {
-	return _channelMembers.size();
 }
 
 int Channel::addOperator(User* user) {
@@ -202,9 +225,9 @@ int Channel::setMode(char mode, char op, std::string value, User* setter) {
 					if (!stringToInt(value, limit)) {
 						throw IRCException(472, "ERR_UNKNOWNMORE");
 					}
-					_userLimit = (limit < 0) ? 0 : limit;
+					_memberLimit = (limit < 0) ? 0 : limit;
 				} else {
-					_userLimit = 0;
+					_memberLimit = 0;
 				}
 				break;
 			

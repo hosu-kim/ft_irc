@@ -22,14 +22,21 @@ class User
 		std::string buffer;
 
 		// GETTERS
-		std::string getName() const;
+		std::string getUserName() const;
 		std::string getNickname() const;
 		std::string getFullname() const;
-		std::string getHostmask() const;
-		int getFd() const;
+		std::string getHostName() const;
+
+		int 	getFd() const;
+
+		bool    getRegistered();
+		bool    getHasUser();
+		bool    getHasNick();
+		bool    getPassOK();
+
 
 		// SETTERS
-		void setName(std::string _name);
+		void setName(std::string _userName);
 		void setNickname(std::string _nickname);
 		void setFullname(std::string _fullname);
 		void setHostmask(std::string _hostmask);
@@ -39,19 +46,15 @@ class User
 		void    setHasNick(bool flag);
 		void    setPassOK(bool flag);
 
-		bool    getRegistered();
-		bool    getHasUser();
-		bool    getHasNick();
-		bool    getPassOK();
-
+		// MEMBER FUNCTIONS
 		void reply(std::string msg);
 
 	private:
 
-		std::string name;
+		std::string userName;
 		std::string nickname;
 		std::string fullname;
-		std::string hostmask;
+		std::string hostName;
 
 		int fd;
 
