@@ -32,17 +32,22 @@ void CmdJoin::execute(User &user, Server &server) {
 
 	// Case 2: the channel already exists in the server: checks modes, +k and +l
 	} else {
-		// A. Password Check (Mode +k)
+		// A. Invite-only Mode Check (Mode +i)
+		if (channel->hasMode('i') && !channel->isInvited(user.getNickname())) {
+			user.reply(":" + server.getServerName() + " 473 " + user.getNickname() + " " + channelName + " :Cannot join channel (+i)");
+			return; // 473 => ERR_INVITEONLYCHAN
+		}
+		// B. Password Check (Mode +k)
 		if (channel->hasMode('k') && channel->getChannelKey() != key) {
 			user.reply(":" + server.getUserName() + " 475 " + user.getNickname() + " " + channelName + " :Cannot join channel (+k)");
 			return; // 475 => ERR_BADCHANNELKEY
 		}
-		// B. Memeber Limit Check (Mode +l)
+		// C. Memeber Limit Check (Mode +l)
 		if (channel->hasMode('l') && channel->getMemberCount() >= channel->getMemberLimit()) {
 			user.reply(":" + server.getUserName() + " 471 " + user.getNickname() + " " + channelName + " :Cannot join channel (+l)");
 			return; // 471 => ERR_CHANNELISFULL
 		}
-		// C. Add the user
+		// D. Add the user
 		channel->addUser(&user, key);
 	}
 	// (3) Sends a success message to every channel member

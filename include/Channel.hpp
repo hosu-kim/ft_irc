@@ -80,12 +80,16 @@ class Channel {
 		size_t getMemberCount() const;
 		std::string getChannelKey() const;
 		size_t getMemberLimit() const;
+		bool isUserInChannel(std::string userNickname) const;
 
 		/* ***LOGIC FUNCTIONS*** */
 		int addUser(User* user, std::string password);
 		int removeUser(User* user);
 		int addOperator(User* user);
 		int removeOperator(User* user);
+		void addInvite(const std::string& nickname);
+		bool isInvited(const std::string& nickname) const;
+		void removeInvite(const std::string& nickname);
 
 		/* Except the sender(exceptUser), all members receive the message*/
 		void broadcast(std::string message, User* exceptUser);

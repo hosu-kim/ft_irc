@@ -66,6 +66,12 @@ std::string Channel::getChannelKey() const
 size_t Channel::getMemberLimit() const
 	{return _memberLimit;}
 
+bool Channel::isUserInChannel(std::string userNickname) const {
+	if (_channelMembers.find(userNickname) != _channelMembers.end()) 
+		return true;
+	return false;
+}
+
 /* ***Logic Functions*** */
 // RFC standards error code used:
 // https://www.rfc-editor.org/rfc/rfc2812.html
@@ -147,6 +153,20 @@ int Channel::removeOperator(User* user) {
 	_channelOperators.erase(nickname);
 
 	return 0;
+}
+
+void Channel::addInvite(const std::string& nickname) {
+	_invitedUsers.insert(nickname);
+
+	std::cout << "[Channel] " << _channelName << ": " << nickname << " has been invited." << std::endl;
+}
+
+bool Channel::isInvited(const std::string& nickname) const {
+	return _invitedUsers.find(nickname)
+}
+
+void Channel::removeInvite(const std::string& nickname) {
+
 }
 
 /* Except the sender(exceptUser), all members receive the message*/
