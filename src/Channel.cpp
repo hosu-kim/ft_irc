@@ -162,11 +162,15 @@ void Channel::addInvite(const std::string& nickname) {
 }
 
 bool Channel::isInvited(const std::string& nickname) const {
-	return _invitedUsers.find(nickname)
+	if (_invitedUsers.find(nickname) != _invitedUsers.end())
+		return true;
+	return false;
 }
 
 void Channel::removeInvite(const std::string& nickname) {
+	_invitedUsers.erase(nickname);
 
+	std::cout << "[Channel] " << _channelName << ": " << nickname << " removed from invite list." << std::endl;
 }
 
 /* Except the sender(exceptUser), all members receive the message*/

@@ -8,6 +8,14 @@ Example: Case 1. Join a channel with NO PASSWORD: JOIN #42prague
 #pragma once
 
 #include "ACmd.hpp"
+#include "Server.hpp"
+#include "User.hpp"
+#include "Channel.hpp"
+
+//class Server;
+//class User;
+
+//class ACmd;
 
 class CmdJoin : public ACmd
 {

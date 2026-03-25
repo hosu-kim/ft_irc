@@ -14,7 +14,7 @@
 #include <signal.h>
 
 #include "User.hpp"
-#include "ACmd.hpp"
+//#include "ACmd.hpp"
 #include "Channel.hpp"
 #include "CmdFactory.hpp"
 
@@ -30,6 +30,8 @@
 
 #define MAX_PORT_NUMBER 65535
 #define MAX_CLIENTS 1024
+
+class ACmd;
 
 class Server
 {

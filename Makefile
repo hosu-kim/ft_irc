@@ -14,7 +14,7 @@ CMD_FILES =	commands/ACmd.cpp \
 			commands/CmdNICK.cpp \
 			commands/CmdPASS.cpp \
 			commands/CmdPING.cpp \
-			commands/CmdPRIMSG.cpp \
+			commands/CmdPRIVMSG.cpp \
 			commands/CmdQUIT.cpp \
 			commands/CmdTOPIC.cpp \
 			commands/CmdUSER.cpp \

@@ -1,5 +1,6 @@
 #include "CmdFactory.hpp"
 
+
 std::vector<std::string> CmdFactory::splitBySpaces(std::string str)
 {
 	std::vector<std::string> result;

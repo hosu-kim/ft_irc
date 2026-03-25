@@ -7,11 +7,31 @@
 
 #include "CmdINVITE.hpp"
 
+/* ORTHODOX CANONICAL FORM */
+// vv default constructor
+CmdInvite::CmdInvite() : ACmd("", std::vector<std::string>()) {}
+// vv parameterized constructor
+CmdInvite::CmdInvite(std::string cmd, std::vector<std::string> params)
+	: ACmd(cmd, params) {}
+// vv copy constructor
+CmdInvite::CmdInvite(const CmdInvite& src) : ACmd(src) {
+	(void)src;
+}
+// vv copy assignment constructor
+CmdInvite& CmdInvite::operator=(const CmdInvite& src) {
+	if (this != &src)
+		this->ACmd::operator=(src);
+	return *this;
+}
+// vv destructor
+CmdInvite::~CmdInvite() {}
+
+/* LOGIC FUNCTIONS */
 void CmdInvite::execute(User &user, Server &server) {
 	// (1) checks the number of parameters
 	if (getParamCount() < 2) {
 		// Sends ERR_NEEDMOREPARAMS (461)
-		std::string msg = ":" + server.getUserName() + " 461 " + user.getNickname() + " INVITE :Not enough parameters";
+		std::string msg = ":" + server.getServerName() + " 461 " + user.getNickname() + " INVITE :Not enough parameters";
 		user.reply(msg);
 		return;
 	}

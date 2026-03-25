@@ -14,9 +14,10 @@
 #include <signal.h>
 #include <vector>
 
-#include "User.hpp"
-#include "Server.hpp"
+//#include "User.hpp"
+//#include "Server.hpp"
 //#include "CmdFactory.hpp"
+// #include "CmdJOIN.hpp"
 
 // Parser logic:
 // DONE 1. Split by spaces
@@ -36,6 +37,7 @@
 // Example: PRIVMSG #chan :hello world
 
 class Server;
+class User;
 
 class ACmd
 {
@@ -46,20 +48,20 @@ class ACmd
 		//       params: ["#channel", "target_user"]
 		std::vector<std::string>	_params;
 		ACmd();
+		// No implementation of the copy constructor and copy assignment constructor.
+		// they are not used in abstract classes.
 
 	protected:
 		// child class uses this parameterized constructor.
 		ACmd(std::string cmd, std::vector<std::string> params);
+		ACmd(const ACmd& other);
+		ACmd& operator=(const ACmd& ohter);
 
 		// getters
 		const std::string& getParam(size_t index);
 		size_t getParamCount() const;
 
 	public:
-		// No implementation of the copy constructor and copy assignment constructor.
-		// they are not used in abstract classes.
-		ACmd(const ACmd& other);
-		ACmd& operator=(const ACmd& ohter);
 		virtual ~ACmd();
 
 		// Pure Virtual Function: Child classes implement this funciton themselves :)

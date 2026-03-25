@@ -182,6 +182,9 @@ void    Server::clientRequest(int i)
 				continue;
 
 			std::string cmd = tokens[0];
+			std::vector<std::string> params;
+			for (size_t i = 1; i < tokens.size(); i++)
+				params.push_back(tokens[i]);
 
 			std::cout << "cmd = " << tokens[0] << std::endl;
 			if (cmd == "PASS")
@@ -195,7 +198,6 @@ void    Server::clientRequest(int i)
 					//DEBUG
 					std::string temp1 = "Password set successfully. \r\n";
 					std::cout << temp1 << std::endl << "PasswordOK is: " << _users[fd].getPassOK() << std::endl;
-					//send(fd, temp1.c_str(), temp1.size(), 0);
 				}
 			}
 			else if (cmd == "USER")
@@ -209,12 +211,11 @@ void    Server::clientRequest(int i)
 					std::string temp1 = "User set successfully. \r\n";
 					std::cout << temp1 << std::endl << "UserOK is: " << _users[fd].getHasUser() << std::endl;
 					std::cout << "User is: " << _users[fd].getFullname() << std::endl;
-					//send(fd, temp1.c_str(), temp1.size(), 0);
 				}
 			}
 			else if (cmd == "NICK")
 			{
-				if (tokens.size() > 1)
+				/*if (tokens.size() > 1)
 				{
 					_users[fd].setNickname(tokens[1]);
 					_users[fd].setHasNick(true);
@@ -223,13 +224,14 @@ void    Server::clientRequest(int i)
 					std::string temp1 = "Nickname set successfully. \r\n";
 					std::cout << temp1 << std::endl << "NicknameOK is: " << _users[fd].getHasNick() << std::endl;
 					std::cout << "Nickname is: " << _users[fd].getNickname() << std::endl;
-					//send(fd, temp1.c_str(), temp1.size(), 0);
-				}
+				}*/
+				CmdNick nickCmd(cmd, params);
+				nickCmd.execute(_users[fd], *this);
+				
 			}
 			else if (cmd == "PRIVMSG")
 			{
 				// 1. Validate input:
-
 				if (tokens.size() < 3)
 				{
 				//      send error: ERR_NEEDMOREPARAMS
@@ -279,7 +281,7 @@ void    Server::clientRequest(int i)
 			}
 			else if (cmd == "JOIN")
 			{
-				if (tokens.size() < 2)
+				/*if (tokens.size() < 2)
 					continue;
 
 				std::string channelName = tokens[1];
@@ -288,7 +290,9 @@ void    Server::clientRequest(int i)
 					ch = createChannel(channelName, &_users[fd]);
 				int result = ch->addUser(&_users[fd], "");
 				std::string joinMsg = ":" + _users[fd].getNickname() + " JOIN " + channelName + "\r\n";
-				ch->broadcast(joinMsg, NULL);
+				ch->broadcast(joinMsg, NULL);*/
+				CmdJoin joinCmd(cmd, params);
+				joinCmd.execute(_users[fd], *this);
 			}
 
 			if (!_users[fd].getRegistered() && _users[fd].getPassOK() && _users[fd].getHasNick() && _users[fd].getHasUser())

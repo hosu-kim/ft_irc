@@ -8,12 +8,14 @@
 
 #include "CmdJOIN.hpp"
 
+
 void CmdJoin::execute(User &user, Server &server) {
 	// (1) checks the number of parameters
 	if (getParamCount() < 1) {
 		// Sends ERR_NEEDMOREPARAMS (461)
 		std::string msg = ":" + server.getUserName() + " 461" + user.getNickname()
 						  + " JOIN :Not enough parameters";
+		//user.reply(msg);
 		return;
 	}
 	
@@ -49,9 +51,12 @@ void CmdJoin::execute(User &user, Server &server) {
 		}
 		// D. Add the user
 		channel->addUser(&user, key);
+
+		if(channel->isInvited(user.getNickname()))
+			channel->removeInvite(user.getNickname());
 	}
 	// (3) Sends a success message to every channel member
 	// Format: "":nickName!userName@hostName Join : #channelName"
-	std::string joinMsg = ":" + user.getNickname() + "!" + user.getUserName() + "@" + user.getHostName() + " JOIN :" + channelName;
+	std::string joinMsg = ":" + user.getNickname() + "!" + user.getUserName() + "@" + user.getHostName() + " JOIN :" + channelName + "\r\n";
 	channel->broadcast(joinMsg, NULL);
 }

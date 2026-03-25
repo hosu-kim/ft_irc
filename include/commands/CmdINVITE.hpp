@@ -9,14 +9,26 @@ example: INVITE friend123 #42prague
 #pragma once
 
 #include "ACmd.hpp"
+#include "Server.hpp"
+#include "User.hpp"
+#include "Channel.hpp"
 
 class CmdInvite : public ACmd
 {
 	public:
-		CmdInvite(std::string cmd, std::vector<std::string> params)
-		: ACmd(cmd, params) {}
+		/* ORTHODOX CANONICAL FORM */
+		CmdInvite();
+		CmdInvite(std::string cmd, std::vector<std::string> params);
+		CmdInvite(const CmdInvite& src);
+		CmdInvite& operator=(const CmdInvite& src);
+		// REMINDER:
+		// if you declare virtual once  in the parent class,
+		// the children automatically become virutal.
+		// However, it's best practice to use virtual in the child class
+		// as well to explicitly show that this class is in an inheritance structure.
+		// vvv
+		virtual ~CmdInvite();
 
-		virtual ~CmdInvite() {}
-
+		/* LOGIC FUNCTIONS */
 		virtual void execute(User &user, Server &server);
 };

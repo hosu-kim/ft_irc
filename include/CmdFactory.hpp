@@ -14,8 +14,17 @@
 #include <signal.h>
 #include <vector>
 
-#include "ACmd.hpp"
+// #include "ACmd.hpp"
 #include "CmdJOIN.hpp"
+#include "CmdINVITE.hpp"
+#include "CmdKICK.hpp"
+#include "CmdMODE.hpp"
+#include "CmdNICK.hpp"
+#include "CmdPASS.hpp"
+#include "CmdPING.hpp"
+#include "CmdPRIVMSG.hpp"
+#include "CmdQUIT.hpp"
+#include "CmdTOPIC.hpp"
 
 class ACmd;
 

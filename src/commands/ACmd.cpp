@@ -5,6 +5,15 @@
 ACmd::ACmd() {}
 ACmd::ACmd(std::string cmd, std::vector<std::string> params)
 	: _cmd(cmd), _params(params) {}
+ACmd::ACmd(const ACmd& src) : _cmd(src._cmd), _params(src._params) {
+}
+ACmd& ACmd::operator=(const ACmd& src) {
+	if (this != &src) {
+		this->_cmd = src._cmd;
+		this->_params = src._params;
+	}
+	return *this;
+}
 ACmd::~ACmd() {}
 
 // getters
