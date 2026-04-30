@@ -9,9 +9,9 @@ example: INVITE friend123 #42prague
 #pragma once
 
 #include "ACmd.hpp"
-#include "Server.hpp"
-#include "User.hpp"
-#include "Channel.hpp"
+
+class Server;
+class User;
 
 class CmdInvite : public ACmd
 {

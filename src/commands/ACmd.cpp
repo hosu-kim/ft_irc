@@ -1,4 +1,4 @@
-#include "commands/ACmd.hpp"
+#include "ACmd.hpp"
 #include "User.hpp"
 
 // ORTHODOX CANONICAL FORM
