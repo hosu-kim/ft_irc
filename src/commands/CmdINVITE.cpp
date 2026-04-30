@@ -5,7 +5,7 @@
    example: INVITE friend123 #42prague
 */
 
-#include "CmdInvite.hpp"
+#include "CmdINVITE.hpp"
 
 /* ORTHODOX CANONICAL FORM */
 // vv default constructor
