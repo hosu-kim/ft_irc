@@ -42,7 +42,7 @@ class Channel;
 
 class ACmd
 {
-	private:
+	protected:
 		// e.g., KICK #channel target_user
 		//       cmd: "NICK"
 		std::string					_cmd;

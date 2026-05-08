@@ -1,10 +1,6 @@
 #include "Channel.hpp"
 
 /* ======================== Orthodox Canonical Form ========================= */
-Channel::Channel()
-	: _channelName("default"), _channelPassword(""),
-	 _channelTopic(""), _memberLimit(0), _isInviteOnly(false),
-	 _isTopicRestricted(false), _hasKey(false) {}
 
 Channel::Channel(const std::string& channelName, User* channelOperator)
 	: _channelName(channelName), _channelPassword("")
@@ -67,7 +63,13 @@ size_t Channel::getMemberLimit() const
 	{return _memberLimit;}
 
 bool Channel::isUserInChannel(std::string userNickname) const {
-	if (_channelMembers.find(userNickname) != _channelMembers.end()) 
+	if (_channelMembers.find(userNickname) != _channelMembers.end())
+		return true;
+	return false;
+}
+
+bool Channel::isUserOperator(std::string userNickname) const {
+	if (_channelOperators.find(userNickname) != _channelOperators.end())
 		return true;
 	return false;
 }

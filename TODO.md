@@ -5,7 +5,7 @@
 	│   ├── CmdFactory.hpp
 	│   ├── commands
 	│   │   ├── ACmd.hpp [DONE]
-	│   │   ├── CmdINVITE.hpp => Currently working - hosu
+	│   │   ├── CmdINVITE.hpp [DONE]
 	│   │   ├── CmdJOIN.hpp [DONE]
 	│   │   ├── CmdKICK.hpp
 	│   │   ├── CmdMODE.hpp

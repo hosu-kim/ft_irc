@@ -65,11 +65,11 @@ class Channel {
 		// if _memberLimit is 0, unlimited user entry allowed
 		size_t _memberLimit; // 'l' mode
 		std::set<std::string> _invitedUsers;
+		Channel();
 
 	public:
 		/* Orthodox Canonical Form */
 		// The constructor sets up _channelName and initializes member variables.
-		Channel();
 		Channel(const std::string& channelName, User* channelOperator);
 		Channel(const Channel& src);
 		Channel& operator=(const Channel& src);
@@ -81,6 +81,7 @@ class Channel {
 		std::string getChannelKey() const;
 		size_t getMemberLimit() const;
 		bool isUserInChannel(std::string userNickname) const;
+		bool isUserOperator(std::string userNickname) const;
 
 		/* ***LOGIC FUNCTIONS*** */
 		int addUser(User* user, std::string password);

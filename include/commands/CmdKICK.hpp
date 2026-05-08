@@ -18,5 +18,5 @@ class CmdKick : public ACmd
 		virtual ~CmdKick();
 
 		/* LOGIC FUNCTIONS */
-		// virtual void execute(User &user, Server &server);
+		virtual void execute(User &user, Server &server);
 };
