@@ -7,8 +7,8 @@
 	│   │   ├── ACmd.hpp [DONE]
 	│   │   ├── CmdINVITE.hpp [DONE]
 	│   │   ├── CmdJOIN.hpp [DONE]
-	│   │   ├── CmdKICK.hpp
-	│   │   ├── CmdMODE.hpp
+	│   │   ├── CmdKICK.hpp [DONE] 08.05.2026
+	│   │   ├── CmdMODE.hpp [Working] 08.05.2026
 	│   │   ├── CmdNICK.hpp
 	│   │   ├── CmdPASS.hpp
 	│   │   ├── CmdPING.hpp

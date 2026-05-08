@@ -33,7 +33,7 @@ void CmdKick::execute(User &user, Server &server) {
 	 * 2. Extract parameters for readability
 	 */
 	std::string channelName = this->_params[0];
-	std::string targetNickToKick = this->_params[1];
+	std::string targetNick = this->_params[1];
 	std::string reason = (this->_params.size() > 2) ? this->_params[2] : "No reason given"; // Default reason
 	/* 
 	 * 3. Check if the channel exists in the Server
@@ -68,16 +68,22 @@ void CmdKick::execute(User &user, Server &server) {
 	// IF targetUser is NULL:
 	//     Send ERR_USERNOTINCHANNEL (441) to 'user'
 	//     RETURN
-	User* targetUserToKick = channel->findUserByNick(targetNickToKick);
-	if (targetUserToKick == NULL) {
-		std::string msg = 
+	User* targetUser = channel->findUserByNick(targetNick);
+	if (targetUser == NULL) {
+		std::string msg = ":" + server.getServerName() + " 441 " + user.getNickname() + " " + channelName + " :User is not in the channel";
+		user.reply(msg);
+		return;
 	}
 
 	/* 
 	 * 6. Execute KICK! (Broadcast FIRST, then Remove)
 	 */
-	// string kickMessage = format(":{sender_prefix} KICK {channelName} {targetNick} :{reason}")
+	// [완] string kickMessage = format(":{sender_prefix} KICK {channelName} {targetNick} :{reason}")
 	// 
 	// channel->broadcast(kickMessage, NULL) // Send to everyone including the target and sender
 	// channel->removeUser(targetUser)       // Now it's safe to remove the target from the channel
+	std::string kickMessage = ":" + user.getNickname() + " KICK " + channelName + " " + targetNick + " :" + reason;
+
+	channel->broadcast(kickMessage, NULL); // Sends message to everyone including the target and sender
+	channel->removeUser(targetUser); // Removes the target user from the channel.
 }
