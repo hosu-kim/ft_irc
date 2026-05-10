@@ -9,3 +9,5 @@
                - Server sends: `PING :srv123
                - Clien sends back: `PONG :srv123
 */
+
+class CmdPing

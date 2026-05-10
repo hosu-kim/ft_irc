@@ -1,30 +1,12 @@
 #include "CmdKICK.hpp"
 
-/* ORTHODOX CANONICAL FORM */
-// vv default constructor
-CmdKick::CmdKick() : ACmd("", std::vector<std::string>()) {}
-// vv parameterized constructor
-CmdKick::CmdKick(std::string cmd, std::vector<std::string> params)
-	: ACmd(cmd, params) {}
-CmdKick::CmdKick(const CmdKick& src) : ACmd(src) {
-	// vvv this class has no member variable to be copied.
-	(void)src;
-}
-CmdKick& CmdKick::operator=(const CmdKick& src) {
-	if (this != &src)
-		this->ACmd::operator=(src);
-	return *this;
-}
-CmdKick::~CmdKick() {}
-
-/* LOGIC FUNCTIONS */
 void CmdKick::execute(User &user, Server &server) {
 	/* 
 	 * 1. Check parameter count
 	 * Syntax: KICK <channel> <target_user> [<reason>]
 	 */
 	if (this->_params.size() < 2) {
-		std::string msg = ":" + server.getServerName() + " 461 " + user.getNickname() + " KICK: Not enough parameters";
+		std::string msg = ":" + server.getServerName() + " 461 " + user.getNickname() + " KICK :Not enough parameters";
 		user.reply(msg);
 		return;
 	}
@@ -64,13 +46,9 @@ void CmdKick::execute(User &user, Server &server) {
 	/* 
 	 * 5. Check if the target user is in the channel
 	 */
-	// User* targetUser = channel->findUserByNick(targetNick)
-	// IF targetUser is NULL:
-	//     Send ERR_USERNOTINCHANNEL (441) to 'user'
-	//     RETURN
 	User* targetUser = channel->findUserByNick(targetNick);
 	if (targetUser == NULL) {
-		std::string msg = ":" + server.getServerName() + " 441 " + user.getNickname() + " " + channelName + " :User is not in the channel";
+		std::string msg = ":" + server.getServerName() + " 441 " + user.getNickname() + " " + targetNick + " " + channelName + " :They aren't on that channel";
 		user.reply(msg);
 		return;
 	}
@@ -78,10 +56,6 @@ void CmdKick::execute(User &user, Server &server) {
 	/* 
 	 * 6. Execute KICK! (Broadcast FIRST, then Remove)
 	 */
-	// [완] string kickMessage = format(":{sender_prefix} KICK {channelName} {targetNick} :{reason}")
-	// 
-	// channel->broadcast(kickMessage, NULL) // Send to everyone including the target and sender
-	// channel->removeUser(targetUser)       // Now it's safe to remove the target from the channel
 	std::string kickMessage = ":" + user.getNickname() + " KICK " + channelName + " " + targetNick + " :" + reason;
 
 	channel->broadcast(kickMessage, NULL); // Sends message to everyone including the target and sender

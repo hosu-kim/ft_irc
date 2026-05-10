@@ -45,6 +45,7 @@ class Server
 		// GETTERS
 		std::string getUserName() const;
 		std::string getServerName() const;
+		std::string getPassword() const;
 
 		// MEMBER FUNCTIONS
 		void 	run();

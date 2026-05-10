@@ -21,6 +21,7 @@ Server::~Server()
 /* ***GETTERS*** */
 std::string Server::getUserName() const { return _userName; }
 std::string Server::getServerName() const { return _serverName; }
+std::string Server::getPassword() const { return _password; }
 
 void Server::setSocket()
 {

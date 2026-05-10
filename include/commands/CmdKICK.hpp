@@ -10,12 +10,9 @@
 class CmdKick : public ACmd
 {
 	public:
-		/* ORTHODOX CANONICAL FORM */
-		CmdKick();
-		CmdKick(std::string cmd, std::vector<std::string> params);
-		CmdKick(const CmdKick& src);
-		CmdKick& operator=(const CmdKick& src);
-		virtual ~CmdKick();
+		CmdKick(std::string cmd, std::vector<std::string> params)
+		: ACmd(cmd, params) {}
+		virtual ~CmdKick() {}
 
 		/* LOGIC FUNCTIONS */
 		virtual void execute(User &user, Server &server);
