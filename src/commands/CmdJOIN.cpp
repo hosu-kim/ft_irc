@@ -13,7 +13,7 @@ void CmdJoin::execute(User &user, Server &server) {
 	// (1) checks the number of parameters
 	if (getParamCount() < 1) {
 		// Sends ERR_NEEDMOREPARAMS (461)
-		std::string msg = ":" + server.getUserName() + " 461" + user.getNickname()
+		std::string msg = ":" + server.getUserName() + " 461 " + user.getNickname()
 						  + " JOIN :Not enough parameters";
 		//user.reply(msg);
 		return;
