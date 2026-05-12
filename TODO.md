@@ -10,8 +10,8 @@
 	│   │   ├── CmdKICK.hpp [DONE] 08.05.2026
 	│   │   ├── CmdMODE.hpp [DONE] 08.05.2026
 	│   │   ├── CmdNICK.hpp
-	│   │   ├── CmdPASS.hpp [Working] 11.05.2026
-	│   │   ├── CmdPING.hpp
+	│   │   ├── CmdPASS.hpp [DONE]
+	│   │   ├── CmdPING.hpp [DONE] 12.05.2026
 	│   │   ├── CmdPRIMSG.hpp
 	│   │   ├── CmdQUIT.hpp
 	│   │   ├── CmdTOPIC.hpp
