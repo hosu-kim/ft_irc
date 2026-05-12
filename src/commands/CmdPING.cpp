@@ -5,7 +5,8 @@ void CmdPing::execute(User& user, Server& server) {
 	Check if the params container is empty (or size is 0)
 	*/
 	if (this->_params.empty()) {
-		std::string msg = ":" + server.getServerName() + " 409 " + user.getNickname() + " :No origin specified";
+		std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
+		std::string msg = ":" + server.getServerName() + " 409 " + nick + " :No origin specified";
 		user.reply(msg);
 		return;
 	}
