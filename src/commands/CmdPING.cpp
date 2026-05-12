@@ -1,4 +1,4 @@
-#include "CmdPing.hpp"
+#include "CmdPING.hpp"
 
 void CmdPing::execute(User& user, Server& server) {
 	/*
@@ -10,13 +10,18 @@ void CmdPing::execute(User& user, Server& server) {
 		return;
 	}
 
-	// [Step 2] Normal Process: Grab the token sent by the client 🔍
-	received_token = Get the first element of params (index 0)
+	/*
+	Grab the token sent by the client
+	*/
+	std::string received_token = _params[0];
 
-	// [Step 3] Build the PONG response message 🛠️
-	// Format: ":<server_name> PONG <server_name> :<received_token>\r\n"
-	response_message = Assemble ":" + server's name + " PONG " + server's name + " :" + received_token + "\r\n"
+	/*
+	Build the PONG response message
+	*/
+	std::string msg = ":" + server.getServerName() + " PONG " + server.getServerName() + " :" + received_token;
 
-	// [Step 4] Send it back to the client 🚀
-	Send the response_message to the user!
+	/*
+	Send it back to the client
+	*/
+	user.reply(msg);
 }

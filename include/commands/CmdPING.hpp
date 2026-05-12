@@ -9,6 +9,9 @@
 					- Server sends: `PING :srv123
 					- Clien sends back: `PONG :srv123
 */
+#pragma once
+
+#include "ACmd.hpp"
 
 class CmdPing: public ACmd {
 	public:
