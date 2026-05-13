@@ -52,18 +52,17 @@ class ACmd
 		// No implementation of the copy constructor and copy assignment constructor.
 		// they are not used in abstract classes.
 
-	protected:
 		// child class uses this parameterized constructor.
 		ACmd(std::string cmd, std::vector<std::string> params);
 		ACmd(const ACmd& other);
 		ACmd& operator=(const ACmd& ohter);
 
+	public:
+		virtual ~ACmd();
+
 		// getters
 		const std::string& getParam(size_t index);
 		size_t getParamCount() const;
-
-	public:
-		virtual ~ACmd();
 
 		// Pure Virtual Function: Child classes implement this funciton themselves :)
 		virtual void execute(User &user, Server &server) = 0;

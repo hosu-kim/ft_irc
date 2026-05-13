@@ -16,7 +16,7 @@
 class CmdNick : public ACmd
 {
 	public:
-		CmdNick(std::string cmd, std::vector<std::string> params)
+		CmdNick(const std::string &cmd, const std::vector<std::string> &params)
 		: ACmd(cmd, params) {}
 
 		virtual ~CmdNick() {}

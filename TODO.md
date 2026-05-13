@@ -9,7 +9,7 @@
 	│   │   ├── CmdJOIN.hpp [DONE]
 	│   │   ├── CmdKICK.hpp [DONE] 08.05.2026
 	│   │   ├── CmdMODE.hpp [DONE] 08.05.2026
-	│   │   ├── CmdNICK.hpp
+	│   │   ├── CmdNICK.hpp [Working] 12.05.2026
 	│   │   ├── CmdPASS.hpp [DONE]
 	│   │   ├── CmdPING.hpp [DONE] 12.05.2026
 	│   │   ├── CmdPRIMSG.hpp

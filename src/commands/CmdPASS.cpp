@@ -5,7 +5,7 @@ void CmdPass::execute(User &user, Server &server) {
 	 * 1. Check parameter count
 	 * Syntax: PASS <password>
 	 */
-	if (this->_params.size() < 1) {
+	if (getParamCount() < 1) {
 		std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
 		std::string msg = ":" + server.getServerName() + " 461 " + nick + " PASS: Not enough parameters";
 		user.reply(msg);

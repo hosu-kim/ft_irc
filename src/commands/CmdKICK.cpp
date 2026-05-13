@@ -5,7 +5,7 @@ void CmdKick::execute(User &user, Server &server) {
 	 * 1. Check parameter count
 	 * Syntax: KICK <channel> <target_user> [<reason>]
 	 */
-	if (this->_params.size() < 2) {
+	if (getParamCount() < 2) {
 		std::string msg = ":" + server.getServerName() + " 461 " + user.getNickname() + " KICK :Not enough parameters";
 		user.reply(msg);
 		return;
