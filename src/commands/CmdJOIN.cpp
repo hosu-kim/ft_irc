@@ -1,10 +1,14 @@
-/* JOIN: used when user joins a channel
-
-   Syntax: JOIN <channel> [<password>]
-
-   Example: Case 1. Join a channel with NO PASSWORD: JOIN #42prague
-            Case 2. Join a channel with PASSWORD: JOIN #42prague password123
-*/
+/**
+ * Command: JOIN
+ * Description: Used when a user wants to join a specific channel.
+ *              If the channel does not exist, it will be created automatically.
+ * 
+ * Syntax: JOIN <channel> [<password>]
+ * 
+ * Examples:
+ *    Case 1. Join a channel with NO PASSWORD: JOIN #42prague
+ *    Case 2. Join a channel with PASSWORD: JOIN #42prague password123
+ */
 
 #include "CmdJOIN.hpp"
 

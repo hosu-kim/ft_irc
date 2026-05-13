@@ -1,3 +1,13 @@
+/**
+ * Command: KICK
+ * Description: Used when a channel operator forcefully removes (=kicks)
+ *              a user from a channel.
+ * 
+ * Syntax: KICK <channel> <user> [<reason>]
+ * 
+ * Example: KICK #42prague bad_user :Don't spam!
+ */
+
 #include "CmdKICK.hpp"
 
 void CmdKick::execute(User &user, Server &server) {

@@ -1,9 +1,13 @@
-/* INVITE: Invites the given user to the given channel.
-
-   Syntax: INVITE <nickname> <channel>
-
-   example: INVITE friend123 #42prague
-*/
+/**
+ * Command: INVITE
+ * Description: Invites the given user to the given channel.
+ *              It is especially usuful for allowing users to join
+ *              invite-only channels (mode +i).
+ * 
+ * syntax: INVITE <nickname> <channel>
+ * 
+ * Example: INVITE friend123 #42prague
+ */
 
 #include "CmdINVITE.hpp"
 

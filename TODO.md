@@ -12,7 +12,7 @@
 	│   │   ├── CmdNICK.hpp [Working] 12.05.2026 => [DONE] 13.05.2026
 	│   │   ├── CmdPASS.hpp [DONE]
 	│   │   ├── CmdPING.hpp [DONE] 12.05.2026
-	│   │   ├── CmdPRIMSG.hpp
+	│   │   ├── CmdPRIMSG.hpp [Working] 13.05.2026
 	│   │   ├── CmdQUIT.hpp
 	│   │   ├── CmdTOPIC.hpp
 	│   │   └── CmdUSER.hpp
@@ -30,7 +30,7 @@
 	    │   ├── CmdMODE.cpp [DONE] 08.05.2026
 	    │   ├── CmdPASS.cpp [DONE]
 	    │   ├── CmdPING.cpp [DONE] 12.05.2026
-	    │   ├── CmdPRIMSG.cpp
+	    │   ├── CmdPRIMSG.cpp [Working] 13.05.2026
 	    │   ├── CmdQUIT.cpp
 	    │   ├── CmdTOPIC.cpp
 	    │   └── CmdUSER.cpp

@@ -1,3 +1,14 @@
+/**
+ * Command: NICK
+ * Description: Used to set or change the user's nickname.
+ *              It is one of the essential commands for a user to register
+ *              and be recognized by the IRC server.
+ * 
+ * Syntax: NICK <nickname>
+ * 
+ * Example: NICK a_cool_nick
+ */
+
 #include "CmdNICK.hpp"
 
 void CmdNick::execute(User &user, Server &server)

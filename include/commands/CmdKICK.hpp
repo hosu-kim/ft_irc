@@ -1,9 +1,14 @@
-/* KICK: used when operator kicks a member of a channel
+/**
+ * Command: KICK
+ * Description: Used when a channel operator forcefully removes (=kicks)
+ *              a user from a channel.
+ * 
+ * Syntax: KICK <channel> <user> [<reason>]
+ * 
+ * Example: KICK #42prague bad_user :Don't spam!
+ */
 
-	Syntax: KICK <channel> <member> [<reason>]
-
-	Example: KICK #42prague bad_user :Don't spam!
-*/
+#pragma once
 
 #include "ACmd.hpp"
 

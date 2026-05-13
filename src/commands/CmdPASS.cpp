@@ -1,3 +1,14 @@
+/**
+ * Command: PASS
+ * Description: Used to set a connection password.
+ *              In the IRC protocol, this command MUST be sent before
+ *              the NICK and USER commands during the initial connection.
+ * 
+ * Syntax: PASS <password>
+ * 
+ * Example: PASS pw123
+ */
+
 #include "CmdPASS.hpp"
 
 void CmdPass::execute(User &user, Server &server) {
