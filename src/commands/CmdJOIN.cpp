@@ -14,19 +14,27 @@
 
 
 void CmdJoin::execute(User &user, Server &server) {
-	// (1) checks the number of parameters
+	// "*" used as a temporary placeholder if the user hasn't set a nickname yet.
+	// This prevents formatting errors in IRC numeric replies. (=> std::string msg = ...)
+	std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
+
+	/*
+	 * 1. Check the number of parameters
+	 */
 	if (getParamCount() < 1) {
 		// Sends ERR_NEEDMOREPARAMS (461)
-		std::string msg = ":" + server.getUserName() + " 461 " + user.getNickname()
+		std::string errMsg = ":" + server.getServerName() + " 461 " + nick
 						  + " JOIN :Not enough parameters";
-		//user.reply(msg);
+		user.reply(errMsg);
 		return;
 	}
 	
 	std::string channelName = getParam(0);
 	std::string key = (getParamCount() >= 2) ? getParam(1) : "";
 
-	// (2) Find a channel with the given channel userName in the server
+	/* 
+	 * Find a channel with the given channel userName in the server
+	 */
 	Channel* channel = server.findChannel(channelName);
 
 	// Case 1: the channel doesn't exist in the server => make one
@@ -40,17 +48,17 @@ void CmdJoin::execute(User &user, Server &server) {
 	} else {
 		// A. Invite-only Mode Check (Mode +i)
 		if (channel->hasMode('i') && !channel->isInvited(user.getNickname())) {
-			user.reply(":" + server.getServerName() + " 473 " + user.getNickname() + " " + channelName + " :Cannot join channel (+i)");
+			user.reply(":" + server.getServerName() + " 473 " + nick + " " + channelName + " :Cannot join channel (+i)");
 			return; // 473 => ERR_INVITEONLYCHAN
 		}
 		// B. Password Check (Mode +k)
 		if (channel->hasMode('k') && channel->getChannelKey() != key) {
-			user.reply(":" + server.getUserName() + " 475 " + user.getNickname() + " " + channelName + " :Cannot join channel (+k)");
+			user.reply(":" + server.getServerName() + " 475 " + nick + " " + channelName + " :Cannot join channel (+k)");
 			return; // 475 => ERR_BADCHANNELKEY
 		}
 		// C. Memeber Limit Check (Mode +l)
 		if (channel->hasMode('l') && channel->getMemberCount() >= channel->getMemberLimit()) {
-			user.reply(":" + server.getUserName() + " 471 " + user.getNickname() + " " + channelName + " :Cannot join channel (+l)");
+			user.reply(":" + server.getServerName() + " 471 " + nick + " " + channelName + " :Cannot join channel (+l)");
 			return; // 471 => ERR_CHANNELISFULL
 		}
 		// D. Add the user
@@ -61,6 +69,6 @@ void CmdJoin::execute(User &user, Server &server) {
 	}
 	// (3) Sends a success message to every channel member
 	// Format: "":nickName!userName@hostName Join : #channelName"
-	std::string joinMsg = ":" + user.getNickname() + "!" + user.getUserName() + "@" + user.getHostName() + " JOIN :" + channelName + "\r\n";
+	std::string joinMsg = ":" + nick + "!" + user.getUserName() + "@" + user.getHostName() + " JOIN :" + channelName + "\r\n";
 	channel->broadcast(joinMsg, NULL);
 }

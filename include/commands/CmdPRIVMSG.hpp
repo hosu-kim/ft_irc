@@ -20,5 +20,5 @@ class CmdPrivmsg: public ACmd {
 		CmdPrivmsg(const std::string &cmd, const std::vector<std::string> &params) {}
 		virtual ~CmdPrivmsg() {}
 	
-		virtual void execute(User&user, Server& server);
+		virtual void execute(const User &user, const Server &server);
 };

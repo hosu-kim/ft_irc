@@ -11,13 +11,17 @@
 #include "CmdKICK.hpp"
 
 void CmdKick::execute(User &user, Server &server) {
+	// "*" used as a temporary placeholder if the user hasn't set a nickname yet.
+	// This prevents formatting errors in IRC numeric replies. (=> std::string msg = ...)
+	std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
+
 	/* 
 	 * 1. Check parameter count
 	 * Syntax: KICK <channel> <target_user> [<reason>]
 	 */
 	if (getParamCount() < 2) {
-		std::string msg = ":" + server.getServerName() + " 461 " + user.getNickname() + " KICK :Not enough parameters";
-		user.reply(msg);
+		std::string errMsg = ":" + server.getServerName() + " 461 " + nick + " KICK :Not enough parameters";
+		user.reply(errMsg);
 		return;
 	}
 
@@ -32,7 +36,7 @@ void CmdKick::execute(User &user, Server &server) {
 	 */
 	Channel* channel = server.findChannel(channelName);
 	if (channel == NULL) {
-		std::string msg = ":" + server.getServerName() + " 403 " + user.getNickname() + " " + channelName + " :No such channel";
+		std::string msg = ":" + server.getServerName() + " 403 " + nick + " " + channelName + " :No such channel";
 		user.reply(msg);
 		return;
 	}
@@ -42,13 +46,13 @@ void CmdKick::execute(User &user, Server &server) {
 	 */
 	// IF 'user' is NOT in 'channel':
 	if (!channel->isUserInChannel(user.getNickname())) {
-		std::string msg = ":" + server.getServerName() + " 442 " + user.getNickname() + " " + channelName + " :You're not on that channel";
+		std::string msg = ":" + server.getServerName() + " 442 " + nick + " " + channelName + " :You're not on that channel";
 		user.reply(msg);
 		return;
 	}
 	// IF 'user' is NOT an operator of 'channel':
 	if (!channel->isUserOperator(user.getNickname())) {
-		std::string msg = ":" + server.getServerName() + " 482 " + user.getNickname() + " " + channelName + " :You're not channel operator";
+		std::string msg = ":" + server.getServerName() + " 482 " + nick + " " + channelName + " :You're not channel operator";
 		user.reply(msg);
 		return;
 	}
@@ -58,7 +62,7 @@ void CmdKick::execute(User &user, Server &server) {
 	 */
 	User* targetUser = channel->findUserByNick(targetNick);
 	if (targetUser == NULL) {
-		std::string msg = ":" + server.getServerName() + " 441 " + user.getNickname() + " " + targetNick + " " + channelName + " :They aren't on that channel";
+		std::string msg = ":" + server.getServerName() + " 441 " + nick + " " + targetNick + " " + channelName + " :They aren't on that channel";
 		user.reply(msg);
 		return;
 	}
@@ -66,7 +70,7 @@ void CmdKick::execute(User &user, Server &server) {
 	/* 
 	 * 6. Execute KICK! (Broadcast FIRST, then Remove)
 	 */
-	std::string kickMessage = ":" + user.getNickname() + " KICK " + channelName + " " + targetNick + " :" + reason;
+	std::string kickMessage = ":" + nick + " KICK " + channelName + " " + targetNick + " :" + reason;
 
 	channel->broadcast(kickMessage, NULL); // Sends message to everyone including the target and sender
 	channel->removeUser(targetUser); // Removes the target user from the channel.

@@ -14,53 +14,53 @@
 void CmdNick::execute(User &user, Server &server)
 {
 	/*
-	1. Check if the nickname parameter is missing
-	*/
+	 * 1. Check if the nickname parameter is missing
+	 */
 	if (getParamCount() != 1)
 	{
-		std::string msg = ":" + server.getServerName() + " 431 " + server.getUserName() + " :Nickname not given. Please provide us with your nickname.";
-		user.reply(msg);
+		std::string errMsg = ":" + server.getServerName() + " 431 " + server.getUserName() + " :Nickname not given. Please provide us with your nickname.";
+		user.reply(errMsg);
 		return;
 	}
 
 	/*
-	2. Get the requested nickname.
-	*/
+	 * 2. Get the requested nickname.
+	 */
 	std::string requested_nick = getParam(0);
 	
 	/*
-	3. Check for invalid characters in the nickname
-	*/
+	 * 3. Check for invalid characters in the nickname
+	 */
 	// find_first_of: - returns the index of the first character that matches any character in the given string
 	//                - C++98 standard library function(<string>)
 	size_t pos = requested_nick.find_first_of(FORBIDDEN_CHARS);
 	if (pos != std::string::npos) {
-		std::string msg = ":" + server.getServerName() + " 432 " + server.getUserName() + " :invalid nickname";
-		user.reply(msg);
+		std::string errMsg = ":" + server.getServerName() + " 432 " + server.getUserName() + " :invalid nickname";
+		user.reply(errMsg);
 		return;
 	}
 
 	/*
-	4. Check if the nickname is already taken by someone else in the server
-	*/
+	 * 4. Check if the nickname is already taken by someone else in the server
+	 */
 	// // Using _params[i] directly could cause a segfault if the requested index doesn't exist. => Use getParam()
 	if (server.findUserByNick(getParam(0))) {
 		std::string current_nick = user.getNickname().empty() ? "*" : user.getNickname();
-		std::string msg = ":" + server.getServerName() + " 433 " + current_nick + " " + requested_nick + " :nickname already exists in the server";
-		user.reply(msg);
+		std::string errMsg = ":" + server.getServerName() + " 433 " + current_nick + " " + requested_nick + " :nickname already exists in the server";
+		user.reply(errMsg);
 		return;
 	}
 
 	/*
-	5. Success! Apply the new nickname
-	*/
+	 * 5. Success! Apply the new nickname
+	 */
 	std::string old_nick = user.getNickname();
 	user.setNickname(getParam(0));
 	user.setHasNick(true);
 
 	/*
-	6. Announce the NICK change
-	*/
+	 * 6. Announce the NICK change
+	 */
 	std::string success_msg = ":" + old_nick + "!" + user.getUserName() + "@" + user.getHostName() + " NICK :" + user.getNickname();
 	user.reply(success_msg);
 }
