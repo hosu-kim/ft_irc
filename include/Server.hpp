@@ -46,17 +46,18 @@ class Server
 		std::string getUserName() const;
 		std::string getServerName() const;
 		std::string getPassword() const;
+		Channel*	getChannel(std::string channelName);
+		User*		getUserByNick(const std::string& nick);
+
+		// SETTERS
+		void 	setSocket();
+		Channel*	setChannel(std::string channelName, User* channelOperator);
 
 		// MEMBER FUNCTIONS
 		void 	run();
-		void 	setSocket();
 		void	newClient(void);
 		void	clientRequest(int i);
 		void	removeUser(int i);
-
-		User*		findUserByNick(const std::string& nick);
-		Channel*	findChannel(std::string channelName);
-		Channel*	createChannel(std::string channelName, User* channelOperator);
 
 		class RunTimeError: public std::exception
 		{

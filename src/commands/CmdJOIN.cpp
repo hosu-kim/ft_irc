@@ -35,14 +35,14 @@ void CmdJoin::execute(User &user, Server &server) {
 	/* 
 	 * Find a channel with the given channel userName in the server
 	 */
-	Channel* channel = server.findChannel(channelName);
+	Channel* channel = server.getChannel(channelName);
 
 	// Case 1: the channel doesn't exist in the server => make one
 	if (channel == NULL) {
 		
 		// the first user in the channel becomes an operator,
 		// it should be implemented in createChannel for now idk
-		channel = server.createChannel(channelName, &user);
+		channel = server.setChannel(channelName, &user);
 
 	// Case 2: the channel already exists in the server: checks modes, +k and +l
 	} else {

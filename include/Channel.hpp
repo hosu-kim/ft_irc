@@ -82,6 +82,7 @@ class Channel {
 		size_t getMemberLimit() const;
 		bool isUserInChannel(std::string userNickname) const;
 		bool isUserOperator(std::string userNickname) const;
+		User* getUserByNick(std::string nickname);
 
 		/* ***LOGIC FUNCTIONS*** */
 		int addUser(User* user, std::string password);
@@ -96,7 +97,6 @@ class Channel {
 		void broadcast(std::string message, User* exceptUser);
 
 		// mode change member functions
-		User* findUserByNick(std::string nickname);
 		bool stringToInt(const std::string& str, int& result);
 		int setMode(char mode, char op, std::string value, User* setter);
 

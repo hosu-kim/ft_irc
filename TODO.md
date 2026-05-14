@@ -12,7 +12,7 @@
 	│   │   ├── CmdNICK.hpp [Working] 12.05.2026 => [DONE] 13.05.2026
 	│   │   ├── CmdPASS.hpp [DONE]
 	│   │   ├── CmdPING.hpp [DONE] 12.05.2026
-	│   │   ├── CmdPRIMSG.hpp [Working] 13.05.2026
+	│   │   ├── CmdPRIMSG.hpp [Working] 13.05.2026 => [DONE] 14.05.2026
 	│   │   ├── CmdQUIT.hpp
 	│   │   ├── CmdTOPIC.hpp
 	│   │   └── CmdUSER.hpp

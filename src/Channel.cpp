@@ -198,7 +198,7 @@ void Channel::broadcast(std::string msg, User* exceptUser) {
 }
 
 // ============================= Helper functions for setMode =============================
-User* Channel::findUserByNick(std::string nickname) {
+User* Channel::getUserByNick(std::string nickname) {
 	std::map<std::string, User*>::iterator it = _channelMembers.find(nickname);
 	if (it == _channelMembers.end())
 		return NULL;
@@ -260,7 +260,7 @@ int Channel::setMode(char mode, char op, std::string value, User* setter) {
 			case 'o':
 			{
 				if (value.empty()) throw IRCException(461, "ERR_NEEDMOREPARAMS");
-				User* target = findUserByNick(value);
+				User* target = getUserByNick(value);
 				if (!target) throw IRCException(401, "ERR_NOSUCHNICK");
 
 				return isPlus ? this->addOperator(target) : this->removeOperator(target);

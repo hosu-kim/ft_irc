@@ -34,7 +34,7 @@ void CmdKick::execute(User &user, Server &server) {
 	/* 
 	 * 3. Check if the channel exists in the Server
 	 */
-	Channel* channel = server.findChannel(channelName);
+	Channel* channel = server.getChannel(channelName);
 	if (channel == NULL) {
 		std::string msg = ":" + server.getServerName() + " 403 " + nick + " " + channelName + " :No such channel";
 		user.reply(msg);
@@ -60,7 +60,7 @@ void CmdKick::execute(User &user, Server &server) {
 	/* 
 	 * 5. Check if the target user is in the channel
 	 */
-	User* targetUser = channel->findUserByNick(targetNick);
+	User* targetUser = channel->getUserByNick(targetNick);
 	if (targetUser == NULL) {
 		std::string msg = ":" + server.getServerName() + " 441 " + nick + " " + targetNick + " " + channelName + " :They aren't on that channel";
 		user.reply(msg);

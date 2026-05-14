@@ -106,7 +106,7 @@ void    Server::newClient(void)
 	}
 }
 
-User* Server::findUserByNick(const std::string& nick)
+User* Server::getUserByNick(const std::string& nick)
 {
 	for (std::map<int, User>::iterator it = _users.begin(); it != _users.end(); ++it)
 	{
@@ -119,7 +119,7 @@ User* Server::findUserByNick(const std::string& nick)
 /* finds the given channel userName in the _channels map container
    and return the corresponding iterator if not found return `NULL`
  */
-Channel* Server::findChannel(std::string channelName) {
+Channel* Server::getChannel(std::string channelName) {
 	channel_map::iterator it = _channels.find(channelName);
 	if (it != _channels.end())
 		return it->second; // found
@@ -129,7 +129,7 @@ Channel* Server::findChannel(std::string channelName) {
 /* Creates a channel instance and add it into the _channels map container
    and returns it
 */
-Channel* Server::createChannel(std::string channelName, User* channelOperator) {
+Channel* Server::setChannel(std::string channelName, User* channelOperator) {
 	Channel* newChannel = new Channel(channelName, channelOperator);
 	_channels[channelName] = newChannel;
 
@@ -261,7 +261,7 @@ void    Server::clientRequest(int i)
 
 				else
 				{
-					User *targetUser = findUserByNick(target);
+					User *targetUser = getUserByNick(target);
 					if (!targetUser)
 					{
 						std::string err = ":localhost 401 " + _users[fd].getNickname() + " " + target +" :No such nick\r\n";

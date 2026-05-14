@@ -44,7 +44,7 @@ void CmdNick::execute(User &user, Server &server)
 	 * 4. Check if the nickname is already taken by someone else in the server
 	 */
 	// // Using _params[i] directly could cause a segfault if the requested index doesn't exist. => Use getParam()
-	if (server.findUserByNick(getParam(0))) {
+	if (server.getUserByNick(getParam(0))) {
 		std::string current_nick = user.getNickname().empty() ? "*" : user.getNickname();
 		std::string errMsg = ":" + server.getServerName() + " 433 " + current_nick + " " + requested_nick + " :nickname already exists in the server";
 		user.reply(errMsg);

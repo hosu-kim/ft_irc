@@ -21,7 +21,7 @@ void CmdPrivmsg::execute(User &user, Server &server) {
 	/*
 	 * 1. Check parameter count
 	 */
-	// If no parameters given (= 0):
+	// 1a. If no parameters given (= 0):
 	if (this->getParamCount() == 0) {
 
 		std::string errMsg = ":" + server.getServerName() + " 411 " + nick + " :No recipient given";
@@ -29,7 +29,7 @@ void CmdPrivmsg::execute(User &user, Server &server) {
 		return;
 	}
 
-	// If only 1 parameter given (= has target, but no message):
+	// 1b. If only 1 parameter given (= has target, but no message):
 	if (this->getParamCount() == 1) {
 		std::string errMsg = ":" + server.getServerName() + " 412 " + nick + " :No text to send";
 		user.reply(errMsg);
@@ -43,25 +43,56 @@ void CmdPrivmsg::execute(User &user, Server &server) {
 	std::string chatMsg = this->getParam(1);
 
 	/*
-	 * 3. Route the message: Is it a Channel or a User?
-	 */
-	// If target starts with '#' (= target is a channel):
-	
-	//         - Find the channel in the server by its name.
-	//         - IF the channel does not exist:
-	//              SEND ERR_NOSUCHNICK (401) -> "No such nick/channel"
-	//              RETURN
-	//         - IF the user is NOT in that channel (Cannot send messages to a channel you haven't joined!):
-	//              SEND ERR_CANNOTSENDTOCHAN (404) -> "Cannot send to channel"
-	//              RETURN
-	//         - ELSE:
-	//              Broadcast the message to everyone in the channel EXCEPT the sender!
-	
-	//    - ELSE (It's a user! 1:1 Private Message):
-	//         - Find the user in the server by their nickname (target).
-	//         - IF the user does not exist:
-	//              SEND ERR_NOSUCHNICK (401) -> "No such nick/channel"
-	//              RETURN
-	//         - ELSE:
-	//              Send the message directly to that user!
+	* 3. Route the message: Is it a Channel or a User?
+	*/
+
+	// 3a. If target starts with '#' (= target is a CHANNEL => send chatMsg to channel)
+	if (target[0] == '#') {
+		// 3a-1. Find the channel in the server. 
+		Channel* targetChannel = server.getChannel(target.substr(1));
+
+		// 3a-2. If the channel does not exist:
+		if (targetChannel == NULL) {
+			std::string errMsg = ":" + server.getServerName() + " 401 " + nick + " :No such nick";
+			user.reply(errMsg);
+			return;
+		}
+
+		// 3a-3. If the sender (user) is NOT in that channel:
+		if (targetChannel->getUserByNick(user.getNickname()) == NULL) {
+			std::string errMsg = ":" + server.getServerName() + " 404 " + nick + " :User is not in channel";
+			user.reply(errMsg);
+			return;
+		}
+		// 3a-4. Else👌: All checks passed => send chatMsg to the channel)
+		else {
+			std::string formattedChatMsg = ":" + user.getNickname() + "!"
+										 + user.getUserName() + "@"
+										 + user.getHostName() + " PRIVMSG "
+										 + target + " :" + chatMsg;
+			targetChannel->broadcast(formattedChatMsg, &user);
+		}
+	} 
+	// 3b. if target is a user => send chatMsg to the user.
+	else {
+		// 3b-1. Find the user in the server by their nickname.
+		User* targetUser = server.getUserByNick(target);
+
+		// 3b-2. If the user does not exist:
+		if (targetUser == NULL) {
+			std::string errMsg = ":" + server.getServerName() + " 401 " + nick + " :No such nick";
+			user.reply(errMsg);
+			return;
+		}
+		// 3b-3. Else👌: All checks passed => send chatMsg to the user
+		else {
+			//      Send the message directly to that targetUser
+			// ":userNick!username@hostName PRIVMSG targetUser :Hello"
+			std::string formattedChatMsg = ":" + user.getNickname() + "!"
+										 + user.getUserName() + "@"
+										 + user.getHostName() + " PRIVMSG "
+										 + targetUser->getNickname() + " :" + chatMsg;
+			targetUser->reply(formattedChatMsg);
+		}
+	}
 }
