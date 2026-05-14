@@ -50,7 +50,7 @@ class Server
 		User*		getUserByNick(const std::string& nick);
 
 		// SETTERS
-		void 	setSocket();
+		void		setSocket();
 		Channel*	setChannel(std::string channelName, User* channelOperator);
 
 		// MEMBER FUNCTIONS
@@ -58,6 +58,8 @@ class Server
 		void	newClient(void);
 		void	clientRequest(int i);
 		void	removeUser(int i);
+		void	removeUser(User &user);
+		void	removeChannel(std::string channelName);
 
 		class RunTimeError: public std::exception
 		{

@@ -12,6 +12,10 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <signal.h>
+#include <map>
+#include <algorithm>
+
+class Channel;
 
 class User
 {
@@ -26,6 +30,7 @@ class User
 		std::string getNickname() const;
 		std::string getFullname() const;
 		std::string getHostName() const;
+		const std::map<std::string, Channel*>& getJoinedChannels() const;
 
 		int 	getFd() const;
 
@@ -48,13 +53,17 @@ class User
 
 		// MEMBER FUNCTIONS
 		void reply(std::string msg);
+		void joinChannel(Channel* channel);
+		void removeChannel(Channel* channel);
 
 	private:
 
-		std::string userName;
-		std::string nickname;
-		std::string fullname;
-		std::string hostName;
+		std::string _userName;
+		std::string _nickname;
+		std::string _fullname;
+		std::string _hostName;
+
+		std::map<std::string, Channel*> _joinedChannels;
 
 		int fd;
 

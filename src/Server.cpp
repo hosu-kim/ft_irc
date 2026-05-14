@@ -328,12 +328,28 @@ void    Server::removeUser(int i)
 	close(fd);
 	// 3. Remove from user map:
 	_users.erase(fd);
-	// 4. Remove from poll array - shift everything left:
-	for (int j = i; j < _fd_count -1; j++)
-		_user_poll[j] = _user_poll[j + 1];
+	if (i < (int)_fd_count - 1) {
+		_user_poll[i] = _user_poll[_fd_count - 1];
+	}
 	_fd_count--;
+	
+	std::cout << "[Server] User removed. Current count: " << _fd_count << std::endl;
 }
 
+void Server::removeUser(User &user) {
+	int fd = user.getFd();
+
+	for (unsigned int i = 0; i < _fd_count; i++) {
+		if (_user_poll[i].fd == fd) {
+			this->removeUser(i);
+			return;
+		}
+	}
+}
+
+void	Server::removeChannel(std::string channelName) {
+	this->_channels.erase(channelName);
+}
 
 void Server::run()
 {
@@ -345,26 +361,25 @@ void Server::run()
 		if (poll(_user_poll, _fd_count, -1) < 0)          // change -1 to 0
 			throw Server::RunTimeError("Error: poll failed.");
 		//unsigned int current_size = fd_count;
-		for (unsigned int i = 0; i < _fd_count; i++)
-		{
-			try
-			{
-				if (_user_poll[i].revents & POLLIN)
-				{
-					if (_user_poll[i].fd == _server_fd)
-						newClient(); 
-					else
-						clientRequest(i); 
+		for (unsigned int i = 0; i < _fd_count; i++) {
+			if (_user_poll[i].revents & POLLIN) {
+				if (_user_poll[i].fd == _server_fd) {
+					newClient();
 				}
-				else if ((_user_poll[i].revents & (POLLHUP | POLLERR)) /*|| (user_poll[i].revents & POLLOUT)*/)
-				{
-					removeUser(i);
-					i--;
+				else {
+					unsigned int count_before = _fd_count;
+					clientRequest(i);
+
+					if (_fd_count < count_before) {
+						i--;
+						continue;
+					}
 				}
 			}
-			catch (std::exception &e)
-			{
-				std::cerr << e.what() << '\n';
+			else if (_user_poll[i].revents & (POLLHUP | POLLERR)) {
+				removeUser(i);
+				i--;
+				continue;
 			}
 			_user_poll[i].revents = 0;
 		}

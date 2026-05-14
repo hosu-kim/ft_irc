@@ -75,6 +75,7 @@ class Channel {
 		Channel& operator=(const Channel& src);
 		~Channel();
 		//======================================================================
+
 		/* ***GETTERS*** */
 		bool hasMode(char mode) const;
 		size_t getMemberCount() const;
@@ -83,6 +84,8 @@ class Channel {
 		bool isUserInChannel(std::string userNickname) const;
 		bool isUserOperator(std::string userNickname) const;
 		User* getUserByNick(std::string nickname);
+		std::string getChannelName();
+		size_t getUserCount() const;
 
 		/* ***LOGIC FUNCTIONS*** */
 		int addUser(User* user, std::string password);

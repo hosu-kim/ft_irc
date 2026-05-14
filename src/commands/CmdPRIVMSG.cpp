@@ -64,7 +64,7 @@ void CmdPrivmsg::execute(User &user, Server &server) {
 			user.reply(errMsg);
 			return;
 		}
-		// 3a-4. Else👌: All checks passed => send chatMsg to the channel)
+		// 3a-4. Else👌: All checks passed => send chatMsg to the channel
 		else {
 			std::string formattedChatMsg = ":" + user.getNickname() + "!"
 										 + user.getUserName() + "@"

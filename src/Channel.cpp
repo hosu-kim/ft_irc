@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "User.hpp"
 
 /* ======================== Orthodox Canonical Form ========================= */
 
@@ -72,6 +73,14 @@ bool Channel::isUserOperator(std::string userNickname) const {
 	if (_channelOperators.find(userNickname) != _channelOperators.end())
 		return true;
 	return false;
+}
+
+std::string Channel::getChannelName() {
+	return _channelName;
+}
+
+size_t Channel::getUserCount() const {
+	return _channelMembers.size();
 }
 
 /* ***Logic Functions*** */
@@ -154,6 +163,8 @@ int Channel::removeOperator(User* user) {
 	// 3. remove the user from the operator list
 	_channelOperators.erase(nickname);
 
+	// 4. remove the channel from the joined channel list.
+	user->removeChannel(this);
 	return 0;
 }
 

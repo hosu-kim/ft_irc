@@ -17,24 +17,37 @@ void CmdQuit::execute(User &user, Server &server) {
 	/*
 	 * 1. Determine the quit msg (reason)
 	 */
-	// If the user provided a message (getParamCount() > 0):
-	//      quitMsg = getParam(0)
-	// Else:
-	//      quitMsg = "Client Quit" (or any default message)
+	std::string quitMsg = "";
+	// 1a. If the user provided a message
+	if (this->getParamCount() > 0)
+		quitMsg = this->getParam(0);
+	// 1b. user provided no message
+	else
+		quitMsg = "Client Quit";
 
 	/*
 	 * 2. Format the QUIT message to broadcast
 	 */
-	// formattedMsg = ":" + user.getNickname() + "!" + user.getUserName() + "@" + user.getHostName() + " QUIT :" + quitMsg;
+	std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
+	std::string formattedMsg = ":" + nick + "!" + user.getUserName() + "@" + user.getHostName() + " QUIT :" + quitMsg;
 
 	/*
 	 * 3. Broadcast to others & Remove the user
 	 */
-	// OPTION A: If server.removeUser() handles broadcasting to channels automatically:
-	//      server.method_to_remove_user(user, formattedMsg); // Pass the msg so server can broadcast it
-	
-	// OPTION B: If you need to manually broadcast first:
+	std::map<std::string, Channel*> joinedChannels = user.getJoinedChannels();
 	//      - Find all channels this user is in.
 	//      - channel->broadcast(formattedMsg, &user);
-	//      - server.method_to_remove_user(user); 
+	for (std::map<std::string, Channel*>::iterator it = joinedChannels.begin(); it != joinedChannels.end(); ++it) {
+		Channel* channel = it->second;
+
+		channel->broadcast(formattedMsg, &user);
+
+		channel->removeUser(&user);
+
+		if (channel->getUserCount() == 0) {
+			server.removeChannel(channel->getChannelName());
+		}
+	}
+	server.removeUser(user);
+	//      - server.method_to_remove_user(user);
 }
