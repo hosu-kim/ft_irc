@@ -15,7 +15,7 @@
 	│   │   ├── CmdPRIMSG.hpp [Working] 13.05.2026 => [DONE] 14.05.2026
 	│   │   ├── CmdQUIT.hpp [DONE] 14.05.2026
 	│   │   ├── CmdTOPIC.hpp [DONE] 14.05.2026
-	│   │   └── CmdUSER.hpp
+	│   │   └── CmdUSER.hpp [Working] 14.05.2026
 	│   ├── Server.hpp [DONE] => But some code blocks need to be moved to the Cmd classes - hosu (23.03.26)
 	│   └── User.hpp [DONE]
 	├── Makefile [DONE]
