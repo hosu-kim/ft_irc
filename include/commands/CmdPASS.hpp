@@ -15,7 +15,8 @@
 
 class CmdPass : public ACmd {
 	public:
-		CmdPass(std::string cmd, std::vector<std::string> params) {}
+		CmdPass(std::string cmd, std::vector<std::string> params)
+		: ACmd(cmd, params) {}
 		virtual ~CmdPass() {}
 
 		virtual void execute(User &user, Server &server);

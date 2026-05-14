@@ -19,7 +19,8 @@ class User;
 class CmdInvite : public ACmd
 {
 	public:
-		CmdInvite(std::string cmd, std::vector<std::string> params) {}
+		CmdInvite(std::string cmd, std::vector<std::string> params)
+		: ACmd(cmd, params) {}
 		virtual ~CmdInvite() {}
 
 		/* LOGIC FUNCTIONS */

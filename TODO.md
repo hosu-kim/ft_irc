@@ -13,8 +13,8 @@
 	│   │   ├── CmdPASS.hpp [DONE]
 	│   │   ├── CmdPING.hpp [DONE] 12.05.2026
 	│   │   ├── CmdPRIMSG.hpp [Working] 13.05.2026 => [DONE] 14.05.2026
-	│   │   ├── CmdQUIT.hpp
-	│   │   ├── CmdTOPIC.hpp
+	│   │   ├── CmdQUIT.hpp [DONE] 14.05.2026
+	│   │   ├── CmdTOPIC.hpp [DONE] 14.05.2026
 	│   │   └── CmdUSER.hpp
 	│   ├── Server.hpp [DONE] => But some code blocks need to be moved to the Cmd classes - hosu (23.03.26)
 	│   └── User.hpp [DONE]
@@ -31,8 +31,8 @@
 	    │   ├── CmdPASS.cpp [DONE]
 	    │   ├── CmdPING.cpp [DONE] 12.05.2026
 	    │   ├── CmdPRIMSG.cpp [Working] 13.05.2026
-	    │   ├── CmdQUIT.cpp
-	    │   ├── CmdTOPIC.cpp
+	    │   ├── CmdQUIT.cpp [DONE] 14.05.2026
+	    │   ├── CmdTOPIC.cpp [DONE] 14.05.2026
 	    │   └── CmdUSER.cpp
 	    ├── main.cpp [DONE]
 	    ├── Server.cpp [DONE] => But some code blocks need to be moved to the Cmd classes - hosu [23.03.26]

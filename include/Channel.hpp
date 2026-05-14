@@ -86,6 +86,11 @@ class Channel {
 		User* getUserByNick(std::string nickname);
 		std::string getChannelName();
 		size_t getUserCount() const;
+		std::string getChannelTopic() const;
+
+		// SETTERS
+		void setChannelTopic(std::string topic);
+
 
 		/* ***LOGIC FUNCTIONS*** */
 		int addUser(User* user, std::string password);

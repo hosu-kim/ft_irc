@@ -21,7 +21,8 @@
 
 class CmdPing: public ACmd {
 	public:
-		CmdPing(const std::string& cmd, const std::vector<std::string>& params) {}
+		CmdPing(const std::string& cmd, const std::vector<std::string>& params)
+		: ACmd(cmd, params) {}
 		virtual ~CmdPing() {}
 
 		virtual void execute(User &user, Server& server);

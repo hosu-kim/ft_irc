@@ -69,6 +69,6 @@ void CmdJoin::execute(User &user, Server &server) {
 	}
 	// (3) Sends a success message to every channel member
 	// Format: "":nickName!userName@hostName Join : #channelName"
-	std::string joinMsg = ":" + nick + "!" + user.getUserName() + "@" + user.getHostName() + " JOIN :" + channelName + "\r\n";
+	std::string joinMsg = ":" + nick + "!" + user.getUserName() + "@" + user.getHostName() + " JOIN :" + channelName;
 	channel->broadcast(joinMsg, NULL);
 }

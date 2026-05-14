@@ -83,6 +83,14 @@ size_t Channel::getUserCount() const {
 	return _channelMembers.size();
 }
 
+std::string Channel::getChannelTopic() const {
+	return this->_channelTopic;
+}
+
+void Channel::setChannelTopic(std::string topic) {
+	this->_channelTopic = topic;
+}
+
 /* ***Logic Functions*** */
 // RFC standards error code used:
 // https://www.rfc-editor.org/rfc/rfc2812.html
