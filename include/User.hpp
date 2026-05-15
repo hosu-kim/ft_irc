@@ -41,9 +41,9 @@ class User
 
 
 		// SETTERS
-		void setName(std::string _userName);
+		void setUserName(std::string _userName);
 		void setNickname(std::string _nickname);
-		void setFullname(std::string _fullname);
+		void setRealName(std::string _realName);
 		void setHostmask(std::string _hostmask);
 
 		void    setRegistered(bool flag);
@@ -60,7 +60,7 @@ class User
 
 		std::string _userName;
 		std::string _nickname;
-		std::string _fullname;
+		std::string _realName;
 		std::string _hostName;
 
 		std::map<std::string, Channel*> _joinedChannels;

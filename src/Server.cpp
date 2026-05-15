@@ -205,7 +205,7 @@ void    Server::clientRequest(int i)
 			{
 				if (tokens.size() > 4)
 				{
-					_users[fd].setFullname(tokens[4]);
+					_users[fd].setRealName(tokens[4]);
 					_users[fd].setHasUser(true);
 
 					//DEBUG

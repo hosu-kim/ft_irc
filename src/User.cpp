@@ -1,10 +1,10 @@
 #include "User.hpp"
 #include "Channel.hpp"
 
-User::User() : _userName(""), _nickname(""), _fullname(""), _hostName(""), registered(false), has_nick(false), has_user(false), pass_ok(false)
+User::User() : _userName(""), _nickname(""), _realName(""), _hostName(""), registered(false), has_nick(false), has_user(false), pass_ok(false)
 {}
 
-User::User(int user_fd) : _userName(""), _nickname(""), _fullname(""), _hostName(""), registered(false),
+User::User(int user_fd) : _userName(""), _nickname(""), _realName(""), _hostName(""), registered(false),
 fd(user_fd)
 {}
 
@@ -18,7 +18,7 @@ std::string User::getUserName() const
 
 std::string User::getFullname() const
 {
-	return (_fullname);
+	return (_realName);
 }
 
 std::string User::getNickname() const
@@ -61,14 +61,14 @@ const std::map<std::string, Channel*>& User::getJoinedChannels() const {
 
 /* **************** SETTERS ************************ */
 
-void User::setName(std::string _userName)
+void User::setUserName(std::string _userName)
 	{_userName = _userName;}
 
 void User::setNickname(std::string _nickname) 
 	{_nickname = _nickname;}
 
-void User::setFullname(std::string _fullname) 
-	{_fullname = _fullname;}
+void User::setRealName(std::string _realName) 
+	{_realName = _realName;}
 
 void User::setHostmask(std::string _hostmask) 
 	{_hostName = _hostmask;}
