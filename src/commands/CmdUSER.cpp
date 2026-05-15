@@ -36,8 +36,7 @@ void CmdUser::execute(User &user, Server &server) {
 	 * 2. Check if the user is already registered
 	 */
 	// If the user's username is already set, they cannot call the USER command again.
-	// (Assuming user.getUserName() returns an empty string if not set yet).
-	if (user.getUserName().empty() == false) {
+	if (user.getRegistered() || !user.getUserName().empty()) {
 		std::string errMsg = ":" + server.getServerName() + " 462 " + nick + " :Unauthorized command (already registered)";
 		user.reply(errMsg);
 		return;
@@ -46,32 +45,25 @@ void CmdUser::execute(User &user, Server &server) {
 	/* 
 	 * 3. Save the user information
 	 */
+	// Note: param(1) <hostname> and param(2) <servername> are ignored in modern IRC
 	std::string userName = this->getParam(0);
-	// param(1) and param(2) are usually '0' and '*' (ignored).
 	std::string realName = this->getParam(3);
 
 	user.setUserName(userName);
 	user.setRealName(realName);
+	user.setHasUser(true);
 
 	/* 
 	 * 4. Check if Registration is complete
 	 */
-	// A client is fully registered and allowed to chat only after they successfully 
-	// provide BOTH the NICK and USER commands (and PASS if the server has a password).
-	// Because NICK and USER can arrive in any order, we must check it here.
-	if (user.getNickname().empty() == false && user.getPassOK()) {
+	// Connection requires PASS, NICK, and USER to be validated
+	if (user.getHasNick() && user.getHasUser() && user.getPassOK()) {
 		
 		// 4a. Mark the user as fully registered in the server
 		user.setRegistered(true);
 
-		// 4b. Send the mandatory Welcome sequence (001)
-		std::string welcomeMsg = ":" + server.getServerName() + " 001 " + nick + " :Welcome to the ft_irc Network, " + nick + "!" + userName + "@" + user.getIpAddress();
+		// 4b. Send the mandatory Welcome message (001)
+		std::string welcomeMsg = ":" + server.getServerName() + " 001 " + nick + " :Welcome to the ft_irc Network, " + nick + "!" + userName + "@" + user.getHostName();
 		user.reply(welcomeMsg);
-		// Send the mandatory Welcome sequence (001, 002, 003, 004)
-		// std::string welcomeMsg = ":" + server.getServerName() + " 001 " + nick + " :Welcome to the ft_irc Network, " + nick + "!" + userName + "@" + user.getHostName();
-		// user.reply(welcomeMsg);
-		
-		// (Usually, servers also send RPL_YOURHOST (002), RPL_CREATED (003), RPL_MYINFO (004))
-		// server.sendWelcomeMessages(user);
 	}
 }

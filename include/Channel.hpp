@@ -1,24 +1,3 @@
-/*
-TODOS:
-	# Data structure and configuration of properties (member variables).
-	[Done] 1. Declare member variables: channel userName, channel password(key), topic
-		2. User management: list of Users... std::vector<User*> or std::map<int, User*>
-			- operator list: identify users with privilige separately.
-		3. channel modes: i(invite-only), t(topic limit), k(password needed), l(user limit)
-	
-	# methods implementation
-		1. Join-leave: 
-		   - [DONE]addUser(User* user, std::string password);
-		   - [DONE]leaveUser(User* user);
-		2. permission control(add-remove):
-		   - [DONE] addOperator(User* user)
-		   - [DONE] removeOperator(User* user);
-		3. message broadcast: except the sender, all Users receive the messages.
-		   - [DONE]broadcast(std::string msg, User* exceptUser)
-		4. mode setup:
-		   - [DONE]setMode()
-*/
-
 #pragma once
 
 #include <iostream>
@@ -76,7 +55,7 @@ class Channel {
 		~Channel();
 		//======================================================================
 
-		/* ***GETTERS*** */
+		// GETTERS
 		bool hasMode(char mode) const;
 		size_t getMemberCount() const;
 		std::string getChannelKey() const;
@@ -92,7 +71,7 @@ class Channel {
 		void setChannelTopic(std::string topic);
 
 
-		/* ***LOGIC FUNCTIONS*** */
+		// LOGIC FUNCTIONS
 		int addUser(User* user, std::string password);
 		int removeUser(User* user);
 		int addOperator(User* user);

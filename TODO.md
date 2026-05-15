@@ -2,7 +2,7 @@
 	.
 	├── include
 	│   ├── Channel.hpp [DONE]
-	│   ├── CmdFactory.hpp
+	│   ├── CmdFactory.hpp [Working] 15.05.26
 	│   ├── commands
 	│   │   ├── ACmd.hpp [DONE]
 	│   │   ├── CmdINVITE.hpp [DONE]
@@ -15,7 +15,7 @@
 	│   │   ├── CmdPRIMSG.hpp [Working] 13.05.2026 => [DONE] 14.05.2026
 	│   │   ├── CmdQUIT.hpp [DONE] 14.05.2026
 	│   │   ├── CmdTOPIC.hpp [DONE] 14.05.2026
-	│   │   └── CmdUSER.hpp [Working] 14.05.2026
+	│   │   └── CmdUSER.hpp [Working] 14.05.2026 [DONE] 15.05.2026
 	│   ├── Server.hpp [DONE] => But some code blocks need to be moved to the Cmd classes - hosu (23.03.26)
 	│   └── User.hpp [DONE]
 	├── Makefile [DONE]
@@ -33,7 +33,7 @@
 	    │   ├── CmdPRIMSG.cpp [Working] 13.05.2026
 	    │   ├── CmdQUIT.cpp [DONE] 14.05.2026
 	    │   ├── CmdTOPIC.cpp [DONE] 14.05.2026
-	    │   └── CmdUSER.cpp
+	    │   └── CmdUSER.cpp [Working] 14.05.2026 [DONE] 15.05.2026
 	    ├── main.cpp [DONE]
 	    ├── Server.cpp [DONE] => But some code blocks need to be moved to the Cmd classes - hosu [23.03.26]
 	    └── User.cpp [DONE]
