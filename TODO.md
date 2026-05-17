@@ -27,9 +27,11 @@
 	    │   ├── CmdINVITE.cpp [DONE]
 	    │   ├── CmdJOIN.cpp [DONE]
 	    │   ├── CmdKICK.cpp [Working] 12.05.2026 => [DONE] 13.05.2026
+	    │   ├── CmdPART.cpp 
 	    │   ├── CmdMODE.cpp [DONE] 08.05.2026
 	    │   ├── CmdPASS.cpp [DONE]
 	    │   ├── CmdPING.cpp [DONE] 12.05.2026
+	    │   ├── CmdPONG.cpp 
 	    │   ├── CmdPRIMSG.cpp [Working] 13.05.2026
 	    │   ├── CmdQUIT.cpp [DONE] 14.05.2026
 	    │   ├── CmdTOPIC.cpp [DONE] 14.05.2026
