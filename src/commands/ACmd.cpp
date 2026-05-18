@@ -24,7 +24,7 @@ size_t ACmd::getParamCount() const {
 	return this->_params.size();
 }
 
-const std::string& ACmd::getParam(size_t index) {
+const std::string& ACmd::getParam(size_t index) const {
 	if (index >= getParamCount()) {
 		throw std::out_of_range("Parameter index out of range");
 	}

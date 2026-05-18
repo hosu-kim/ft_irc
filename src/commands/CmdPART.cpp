@@ -16,6 +16,16 @@
 
 #include "CmdPART.hpp"
 
+std::string CmdPart::join_params_from_index(std::size_t start) const {
+	std::string out;
+	for (std::size_t i = start; i < this->getParamCount(); ++i) {
+		if (!out.empty()) out += ' ';
+		out += this->getParam(i);
+	}
+	if (!out.empty() && out.front() == ':') out.erase(out.begin());
+	return out;
+}
+
 /*
 :<server> 461 <nick> PART :Not enough parameters\r\n
 :<server> 403 <nick> <channel> :No such channel\r\n
@@ -27,25 +37,27 @@ void CmdPart::execute(User &user, Server &server) {
 	// This prevents formatting errors in IRC numeric replies. (=> std::string msg = ...)
 	std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
 
-	// 1) Parameter validation
-	// - If no parameters provided -> send ERR_NEEDMOREPARAMS (need more params) and return.
-	//   The PART command requires at least one parameter (channel list).
+	/*
+	 * 1. Parameter validation: If no params provided => send ERR_NEEDMOREPARAMS (461) and return
+	 */
 	if (this->getParamCount() == 0) {
-		std::
-		// send error to user: ERR_NEEDMOREPARAMS for "PART"
+		std::string errMsg = ":" + server.getServerName() + " 461 " + user.getNickname() + " PART :Not enough parameters";
+		user.reply(errMsg);
 		return;
 	}
 
-	// 2) Parse channels and optional part message
+	/*
+	 * 2. Parse channels and optional part message
+	 */
 	// - channels_param is first parameter, could be comma-separated list of channels
 	// - optional message might be provided as the second param or as a single param starting with ':'.
-	string channels_param = params[0];
-	string part_message = ""; // default: empty
-	if (params.size() > 1) {
+	std::string channels_param = this->getParam(0);
+	std::string part_reason = ""; // default: empty
+	if (this->getParamCount() > 1) {
 		// join remaining params into message, and strip leading ':' if present
 		// e.g., params[1] might be ":Goodbye" or multiple tokens
-		part_message = join_params_from_index(1); // helper: combine with spaces
-		if (part_message starts with ':') remove leading ':';
+		part_reason = join_params_from_index(1); // helper: combine with spaces
+		if (part_reason starts with ':') remove leading ':';
 	}
 
 	// 3) Split channels by comma and iterate
@@ -77,7 +89,7 @@ void CmdPart::execute(User &user, Server &server) {
 		// - Broadcast a PART message to channel members:
 		//   Format example (conceptual): ":" + user.getPrefix() + " PART " + channel_name + (part_message.empty() ? "" : " :" + part_message)
 		// - Use server/channel broadcast helper to send message to all other members
-		chan->broadcastPart(user, channel_name, part_message);
+		chan->broadcastPart(user, channel_name, part_reason);
 
 		// 8) Post-removal housekeeping
 		// - If channel has no members now, clean it up (delete or mark inactive) depending on server design

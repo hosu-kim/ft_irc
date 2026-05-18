@@ -61,7 +61,7 @@ class ACmd
 		virtual ~ACmd();
 
 		// getters
-		const std::string& getParam(size_t index);
+		const std::string& getParam(size_t index) const;
 		size_t getParamCount() const;
 
 		// Pure Virtual Function: Child classes implement this funciton themselves :)
