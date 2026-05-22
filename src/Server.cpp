@@ -1,4 +1,7 @@
 #include "Server.hpp"
+#include "CmdFactory.hpp"
+#include "commands/CmdNICK.hpp"
+#include "commands/CmdJOIN.hpp"
 
 // ========================== ORTHODOX CANONICAL FORM ==========================
 Server::Server() : _userName("localhost"), _port(0), _server_fd(-1), _fd_count(0) {}

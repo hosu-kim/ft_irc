@@ -1,5 +1,5 @@
-#include "../include/User.hpp"
-#include "../include/Server.hpp"
+#include "User.hpp"
+#include "Server.hpp"
 
 void check_port(char* argv1)
 {

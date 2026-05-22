@@ -16,16 +16,6 @@
 
 #include "CmdPART.hpp"
 
-std::string CmdPart::join_params_from_index(std::size_t start) const {
-	std::string out;
-	for (std::size_t i = start; i < this->getParamCount(); ++i) {
-		if (!out.empty()) out += ' ';
-		out += this->getParam(i);
-	}
-	if (!out.empty() && out.front() == ':') out.erase(out.begin());
-	return out;
-}
-
 /*
 :<server> 461 <nick> PART :Not enough parameters\r\n
 :<server> 403 <nick> <channel> :No such channel\r\n
@@ -49,21 +39,22 @@ void CmdPart::execute(User &user, Server &server) {
 	/*
 	 * 2. Parse channels and optional part message
 	 */
-	// - channels_param is first parameter, could be comma-separated list of channels
-	// - optional message might be provided as the second param or as a single param starting with ':'.
+	// NOTE 1. channels_param is first parameter, could be comma-separated list of channels => PART #ch1,ch2...
+	// NOTE 2. optional message might be provided as the second param or as a single param starting with ':' => PART #ch :bye bye
 	std::string channels_param = this->getParam(0);
 	std::string part_reason = ""; // default: empty
 	if (this->getParamCount() > 1) {
 		// join remaining params into message, and strip leading ':' if present
-		// e.g., params[1] might be ":Goodbye" or multiple tokens
-		part_reason = join_params_from_index(1); // helper: combine with spaces
-		if (part_reason starts with ':') remove leading ':';
+		// e.g., params[1] might be ":Goodbye" (1 token) or multiple tokens => Goobye everyone (2 tokens)
+		part_reason = combine_params_with_spaces(1);
 	}
 
-	// 3) Split channels by comma and iterate
-	vector<string> channel_names = split(channels_param, ',');
-	for each channel_name in channel_names {
-		// trim whitespace around channel_name if needed
+	/*
+	 * 3. Split channels by comma and iterate
+	 */
+	std::vector<std::string> channel_names = split_str(',');
+	for (size_t i = 0; i < channel_names.size(); ++i) {
+		std::string &channel_name = channel_names[i];
 
 		// 4) Validate channel existence
 		Channel *chan = server.findChannel(channel_name);

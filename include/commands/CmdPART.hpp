@@ -26,7 +26,7 @@ class CmdPart : public ACmd {
 		virtual ~CmdPart() {}
 
 		// Helper
-		virtual std::string join_params_from_index(std::size_t start) const;
+		virtual std::string combine_params_with_spaces(std::size_t start) const;
 		// Core function
 		virtual void execute(User &user, Server &server);
 };

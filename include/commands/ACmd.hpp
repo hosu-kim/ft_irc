@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include <string>
 #include <cstring>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -60,9 +60,14 @@ class ACmd
 	public:
 		virtual ~ACmd();
 
-		// getters
+		// GETTTERS
 		const std::string& getParam(size_t index) const;
 		size_t getParamCount() const;
+
+		// HELPERS
+		virtual std::string combine_params_with_spaces(std::size_t start) const;
+		virtual std::vector<std::string> split_str(char delimiter) const;
+
 
 		// Pure Virtual Function: Child classes implement this funciton themselves :)
 		virtual void execute(User &user, Server &server) = 0;

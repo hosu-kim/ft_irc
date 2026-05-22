@@ -12,8 +12,10 @@ CMD_FILES =	commands/ACmd.cpp \
 			commands/CmdKICK.cpp \
 			commands/CmdMODE.cpp \
 			commands/CmdNICK.cpp \
+			commands/CmdPART.cpp \
 			commands/CmdPASS.cpp \
 			commands/CmdPING.cpp \
+			commands/CmdPONG.cpp \
 			commands/CmdPRIVMSG.cpp \
 			commands/CmdQUIT.cpp \
 			commands/CmdTOPIC.cpp \
