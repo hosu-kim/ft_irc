@@ -16,12 +16,6 @@
 
 #include "CmdPART.hpp"
 
-/*
-:<server> 461 <nick> PART :Not enough parameters\r\n
-:<server> 403 <nick> <channel> :No such channel\r\n
-:<server> 442 <nick> <channel> :You're not on that channel\r\n
-*/
-
 void CmdPart::execute(User &user, Server &server) {
 	// "*" used as a temporary placeholder if the user hasn't set a nickname yet.
 	// This prevents formatting errors in IRC numeric replies. (=> std::string msg = ...)
@@ -52,39 +46,45 @@ void CmdPart::execute(User &user, Server &server) {
 	/*
 	 * 3. Split channels by comma and iterate
 	 */
-	std::vector<std::string> channel_names = split_str(',');
-	for (size_t i = 0; i < channel_names.size(); ++i) {
-		std::string &channel_name = channel_names[i];
+	std::vector<std::string> channelNames = split_str(',');
+	for (size_t i = 0; i < channelNames.size(); ++i) {
+		std::string &channelName = channelNames[i];
 
-		// 4) Validate channel existence
-		Channel *chan = server.findChannel(channel_name);
-		if (chan == nullptr) {
-			// send ERR_NOSUCHCHANNEL (no such channel) to user
-			// continue to next channel (do not abort whole command)
+		/*
+		 * 4. Validate channel existence
+		 */
+		Channel *chan = server.getChannel(channelName);
+		if (chan == NULL) {
+			std::string errMsg = ":" + server.getServerName() + " 403 " + user.getNickname() + channelName + " :No such channel";
+			user.reply(errMsg);
 			continue;
 		}
 
-		// 5) Check whether user is on the channel
-		if (!chan->hasMember(user)) {
-			// send ERR_NOTONCHANNEL to user
+		/* 
+		 * 5. Check whether user is on the channel
+		 */
+		if (!chan->isUserInChannel(user.getNickname())) {
+			std::string errMsg = ":" + server.getServerName() + " 442 " + user.getNickname() + channelName + " :You're not on that channel";
+			user.reply(errMsg);
 			continue;
 		}
 
-		// 6) Remove user from channel
-		// - Remove user from channel's member list
-		// - If the user was an operator, adjust operator list as needed
-		// - If removal changes channel state (e.g., empty), optionally destroy the channel
-		chan->removeMember(user);
+		// 6) Notify the channel members
+		// TODO: Construct the PART message to broadcast.
+		// Format: ":<nick>!<user>@<host> PART <channel_name>"
+		// If `part_reason` is not empty, append " :" and the reason to the message.
+		// Broadcast the message to all members in the channel using `chan->broadcast(part_message, NULL)`.
+		// (Broadcasting with NULL ensures the departing user also receives the notification to update their client.)
 
-		// 7) Notify the remaining channel members
-		// - Broadcast a PART message to channel members:
-		//   Format example (conceptual): ":" + user.getPrefix() + " PART " + channel_name + (part_message.empty() ? "" : " :" + part_message)
-		// - Use server/channel broadcast helper to send message to all other members
-		chan->broadcastPart(user, channel_name, part_reason);
+		// 7) Remove the user from the channel
+		// TODO: Remove the user from the channel's member/operator list using `chan->removeUser(&user)`.
+		// Remove the channel from the user's joined channel list using `user.removeChannel(chan)`.
 
-		// 8) Post-removal housekeeping
-		// - If channel has no members now, clean it up (delete or mark inactive) depending on server design
-		// - If there are channel-specific modes or state to update, handle them
+		// 8) Clean up the channel if it has no members left
+		// TODO: Check if the channel's member count is 0 using `chan->getMemberCount()`.
+		// If it is 0:
+		// - Remove the channel from the server using `server.removeChannel(channel_name)`.
+		// - Delete the channel pointer to prevent memory leaks.
 	}
 
 	// 9) End: no global reply needed if every channel was processed;
