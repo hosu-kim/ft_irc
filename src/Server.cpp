@@ -351,7 +351,11 @@ void Server::removeUser(User &user) {
 }
 
 void	Server::removeChannel(std::string channelName) {
-	this->_channels.erase(channelName);
+	channel_map::iterator it = _channels.find(channelName);
+	if (it != _channels.end()) {
+		delete it->second;
+		_channels.erase(it);
+	}
 }
 
 void Server::run()

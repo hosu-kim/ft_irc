@@ -8,7 +8,7 @@
 	│   │   ├── CmdINVITE.hpp [DONE]
 	│   │   ├── CmdJOIN.hpp [DONE]
 	│   │   ├── CmdKICK.hpp [DONE] 08.05.2026
-	│   │   ├── CmdPART.hpp [Working]
+	│   │   ├── CmdPART.hpp [DONE] 29.05.2026
 	│   │   ├── CmdMODE.hpp [DONE] 08.05.2026
 	│   │   ├── CmdNICK.hpp [Working] 12.05.2026 => [DONE] 13.05.2026
 	│   │   ├── CmdPASS.hpp [DONE]
