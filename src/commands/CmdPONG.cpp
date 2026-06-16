@@ -19,41 +19,67 @@
 
 #include "CmdPONG.hpp"
 
+void CmdPong::execute(User &user, Server &server) {
+	/*
+	 * 1. Parameter Validation:
+	 *    If no parameters are provided, return ERR_NOORIGIN (409).
+	 *    Syntax: PONG <server1> [<server2>]
+	 */
+	if (getParamCount() == 0) {
+		std::string errMsg = ":" + server.getServerName() + " 409 " + user.getNickname() + " :No origin specified";
+		// std::string errMsg = ":" + server.getServerName() + " 409 " + user.getNickname() + " :No origin specified";
+		// user.reply(errMsg);
+		return;
+	}
+
+	/*
+	 * 2. Target Server Check (Optional):
+	 *    If a second parameter <server2> is provided, the message should be forwarded there.
+	 *    In a local server environment, this can be ignored or used to verify the server existence.
+	 */
+
+	/*
+	 * 3. Prevent User Timeout:
+	 *    By receiving PONG, the server acknowledges that the connection is still alive.
+	 *    Typically, update the user's last activity time to prevent disconnects due to Ping-timeout.
+	 */
+
+	// TODO: Add logic to update user's last activity time
+}
+	 * 2. Parse target token and optional trailing message
+	 */
+	std::string token = this->getParam(0);
+	if (token[0] == ':')
+		token = token.substr(1);
+	
+	std::string message = "";
+	if (this->getParamCount() > 1) {
+		message = this->combine_params_with_spaces(1);
+		if (!message.empty() && message[0] == ':') message = message.substr(1);
+	}
+
 /*
-1. // Validate parameters
-   if (getParamCount() == 0) {
-       // No token/message provided — nothing to do.
-       // Optionally log a warning or ignore silently.
-       return;
-   }
-
-2. // Parse target token and optional trailing message
-   token = _params[0]
-   if token starts with ':' then token = token.substr(1)
-
-   message = ""
-   if getParamCount() > 1:
-       // join remaining params with spaces into message
-       message = join(_params[1..], " ")
-       if message starts with ':' then message = message.substr(1)
-
 3. // Update keep-alive / ping state
-   // Record that this user responded to a ping
-   user.setLastPongTime(now())      // or store a timestamp field
+	// Record that this user responded to a ping
+	user.setLastPongTime(now())      // or store a timestamp field
 
-   // If server was waiting for a PONG from this user:
-   if server.hasPendingPingFor(user):
-       expectedToken = server.getPendingPingToken(user)
-       if expectedToken == token:
-           // Optionally compute RTT if server stored ping timestamp
-           sentAt = server.getPendingPingTimestamp(user)
-           rtt = now() - sentAt
-           user.setPingLatency(rtt)    // optional
-           server.clearPendingPingFor(user)
+	// If server was waiting for a PONG from this user:
+	if server.hasPendingPingFor(user):
+		 expectedToken = server.getPendingPingToken(user)
+		 if expectedToken == token:
+			  // Optionally compute RTT if server stored ping timestamp
+			  sentAt = server.getPendingPingTimestamp(user)
+			  rtt = now() - sentAt
+			  user.setPingLatency(rtt)    // optional
+			  server.clearPendingPingFor(user)
+*/
 
+/*
 4. // Logging / monitoring (optional)
-   server.log("PONG received from " + user.getUserName() + " token=" + token + " msg=" + message)
+	server.log("PONG received from " + user.getUserName() + " token=" + token + " msg=" + message)
 
 5. // No reply should be sent in response to a PONG
-   return
+	return
 */
+
+}

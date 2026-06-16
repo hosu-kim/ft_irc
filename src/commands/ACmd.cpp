@@ -32,13 +32,13 @@ const std::string& ACmd::getParam(size_t index) const {
 }
 
 std::string ACmd::combine_params_with_spaces(std::size_t start) const {
-	std::string out;
+	std::string output;
 	for (std::size_t i = start; i < this->getParamCount(); ++i) {
-		if (!out.empty()) out += ' ';
-		out += this->getParam(i);
+		if (!output.empty()) output += ' ';
+		output += this->getParam(i);
 	}
-	if (!out.empty() && out.front() == ':') out.erase(out.begin());
-	return out;
+	if (!output.empty() && output[0] == ':') output.erase(output.begin());
+	return output;
 }
 
 std::vector<std::string> ACmd::split_str(char delimiter) const {
