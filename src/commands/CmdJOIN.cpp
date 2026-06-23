@@ -71,4 +71,32 @@ void CmdJoin::execute(User &user, Server &server) {
 	// Format: "":nickName!userName@hostName Join : #channelName"
 	std::string joinMsg = ":" + nick + "!" + user.getUserName() + "@" + user.getHostName() + " JOIN :" + channelName;
 	channel->broadcast(joinMsg, NULL);
+
+	std::string topic = channel->getChannelTopic();
+	if (topic.empty()) {
+		std::string errMsg = ":" + server.getServerName() + " 331 " + nick + " " + channelName + " :No topic is set";
+		user.reply(errMsg);
+	} else {
+		std::string errMsg = ":" + server.getServerName() + " 332 " + nick + " " + channelName + " :" + channel->getChannelTopic();
+		user.reply(errMsg);
+	}
+	
+	std::string symbol = "=";
+	std::string listMsg = ":" + server.getServerName() + " 353 " + nick + " " + symbol + " " + channelName + " :";
+
+	// Iterate channel members to build nickname list
+	const std::map<std::string, User*>& members = channel->getMembers();
+	std::map<std::string, User*>::const_iterator it;
+	for (it = members.begin(); it != members.end(); ++it) {
+		if (channel->isUserOperator(it->first)) {
+			listMsg += "@";
+		}
+		listMsg += it->first + " ";
+	}
+	// Send RPL_NAMREPLY (353)
+	user.reply(listMsg);
+
+	std::string errMsg = ":" + server.getServerName() + " 366 " + nick + " " + channelName + " :End of name list";
+	user.reply(errMsg);
+
 }

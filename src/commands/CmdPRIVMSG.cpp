@@ -49,18 +49,18 @@ void CmdPrivmsg::execute(User &user, Server &server) {
 	// 3a. If target starts with '#' (= target is a CHANNEL => send chatMsg to channel)
 	if (target[0] == '#') {
 		// 3a-1. Find the channel in the server. 
-		Channel* targetChannel = server.getChannel(target.substr(1));
+		Channel* targetChannel = server.getChannel(target);
 
 		// 3a-2. If the channel does not exist:
 		if (targetChannel == NULL) {
-			std::string errMsg = ":" + server.getServerName() + " 401 " + nick + " :No such nick";
+			std::string errMsg = ":" + server.getServerName() + " 403 " + nick + " " + target + " :Channel does not exist";
 			user.reply(errMsg);
 			return;
 		}
 
 		// 3a-3. If the sender (user) is NOT in that channel:
 		if (targetChannel->getUserByNick(user.getNickname()) == NULL) {
-			std::string errMsg = ":" + server.getServerName() + " 404 " + nick + " :User is not in channel";
+			std::string errMsg = ":" + server.getServerName() + " 404 " + nick + " " + target + " :User is not in channel";
 			user.reply(errMsg);
 			return;
 		}

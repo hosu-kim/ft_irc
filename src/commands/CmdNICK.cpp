@@ -13,6 +13,8 @@
 
 void CmdNick::execute(User &user, Server &server)
 {
+	std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
+
 	/*
 	 * 1. Check if the nickname parameter is missing
 	 */
@@ -45,8 +47,7 @@ void CmdNick::execute(User &user, Server &server)
 	 */
 	// // Using _params[i] directly could cause a segfault if the requested index doesn't exist. => Use getParam()
 	if (server.getUserByNick(getParam(0))) {
-		std::string current_nick = user.getNickname().empty() ? "*" : user.getNickname();
-		std::string errMsg = ":" + server.getServerName() + " 433 " + current_nick + " " + requested_nick + " :nickname already exists in the server";
+		std::string errMsg = ":" + server.getServerName() + " 433 " + nick + " " + requested_nick + " :nickname already exists in the server";
 		user.reply(errMsg);
 		return;
 	}
@@ -63,4 +64,13 @@ void CmdNick::execute(User &user, Server &server)
 	 */
 	std::string success_msg = ":" + old_nick + "!" + user.getUserName() + "@" + user.getHostName() + " NICK :" + user.getNickname();
 	user.reply(success_msg);
+
+	/**
+	 * 7. Check if registration is completed after setting the nickname
+	 */
+	if (!user.getRegistered() && user.getPassOK() == true && user.getHasNick() == true && user.getHasUser() == true) {
+		user.setRegistered(true);
+		std::string welcomeMsg = ":" + server.getServerName() + " 001 " + user.getNickname() + " :Welcome to the ft_irc Network, " + user.getNickname() + "!" + user.getUserName() + "@" + user.getHostName();
+		user.reply(welcomeMsg);
+	}
 }

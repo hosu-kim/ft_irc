@@ -66,6 +66,7 @@ class Channel {
 		std::string getChannelName();
 		size_t getUserCount() const;
 		std::string getChannelTopic() const;
+		const std::map<std::string, User*>& getMembers() const;
 
 		// SETTERS
 		void setChannelTopic(std::string topic);
@@ -79,6 +80,7 @@ class Channel {
 		void addInvite(const std::string& nickname);
 		bool isInvited(const std::string& nickname) const;
 		void removeInvite(const std::string& nickname);
+		void updateUserNick(const std::string& oldNick, const std::string& newNick);
 
 		/* Except the sender(exceptUser), all members receive the message*/
 		void broadcast(std::string message, User* exceptUser);

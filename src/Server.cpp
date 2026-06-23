@@ -3,7 +3,6 @@
 #include "commands/CmdNICK.hpp"
 #include "commands/CmdJOIN.hpp"
 
-// ========================== ORTHODOX CANONICAL FORM ==========================
 Server::Server() : _userName("localhost"), _port(0), _server_fd(-1), _fd_count(0) {}
 
 Server::Server(char **argv) : _userName("localhost"), _port(atoi(argv[1])), _password(argv[2])
@@ -19,9 +18,7 @@ Server::~Server()
 	std::cout << "Server shutting down..." << std::endl;
 	close(_server_fd);
 }
-//==============================================================================
 
-/* ***GETTERS*** */
 std::string Server::getUserName() const { return _userName; }
 std::string Server::getServerName() const { return _serverName; }
 std::string Server::getPassword() const { return _password; }
@@ -51,7 +48,7 @@ void Server::setSocket()
 		throw Server::RunTimeError("listen() failed.");
 
 	_user_poll[0].fd = _server_fd;
-	_user_poll[0].events = POLLIN /*| POLLHUP | POLLOUT*/;
+	_user_poll[0].events = POLLIN;
 	_fd_count = 1;
 	std::cout << "setSocket() finished..." << std::endl;
 }
@@ -59,25 +56,6 @@ void Server::setSocket()
 
 void    Server::newClient(void)
 {
-	// GOAL: accept all pending clients and add them to poll()
-	// On server_fd: one POLLIN != one client!!!!
-	// There may be multiple queued 
-	// while (true)
-	// {
-	//      int client_fd = accept(...); ------ + check for fail
-	//      if (client_fd < 0)
-	//          break when no more clients
-	//      else -> handle client
-	//          1. Set non-blocking: fcntl(client_fd, F_SETFL, O_NONBLOCK;)
-	//          2. Add to poll array:
-	//              user_poll[fd_count].fd = clinet_fd;
-	//              user_poll[fd_count].events = POLLIN;
-	//              fd_count++;
-	//          3. Add to user map:
-	//              users[client_fd] = User(client_fd);
-	//          4. Check for fd_count >= MAX_CLIENTS -> close client, refuse connection
-	// }
-
 	int user_fd;
 	struct sockaddr_in   useraddr;
 	socklen_t   addrlen = sizeof(useraddr);
@@ -119,9 +97,6 @@ User* Server::getUserByNick(const std::string& nick)
 	return NULL;
 }
 
-/* finds the given channel userName in the _channels map container
-   and return the corresponding iterator if not found return `NULL`
- */
 Channel* Server::getChannel(std::string channelName) {
 	channel_map::iterator it = _channels.find(channelName);
 	if (it != _channels.end())
@@ -129,9 +104,6 @@ Channel* Server::getChannel(std::string channelName) {
 	return NULL;
 }
 
-/* Creates a channel instance and add it into the _channels map container
-   and returns it
-*/
 Channel* Server::setChannel(std::string channelName, User* channelOperator) {
 	Channel* newChannel = new Channel(channelName, channelOperator);
 	_channels[channelName] = newChannel;
@@ -142,30 +114,20 @@ Channel* Server::setChannel(std::string channelName, User* channelOperator) {
 
 void    Server::clientRequest(int i)
 {
-	// GOAL: read data from a clinet safely
 	char buffer[1024];
-	int bytes = recv(/*server_fd*/ _user_poll[i].fd, buffer, sizeof(buffer), 0);
+	int bytes = recv(_user_poll[i].fd, buffer, sizeof(buffer), 0);
 	int fd = _user_poll[i].fd;
 
 	if (bytes > 0)
-	// Client sent data -> append to user buffer, parse commands
 	{
 		std::string message(buffer, bytes);
 
 		_users[fd].buffer += message;
 
-		// while (buffer contains "\r\n")   ------ size_t pos = buffer.find("\r\n");
-		// {
-		//      extract one line ---------- substr(0, pos);
-		//      remove it from buffer   --------- erase(0, pos + 2);
-		//      process it
-		// }
-
 		std::string &buf = _users[fd].buffer;
 
 		while (true)
 		{
-			//size_t pos = buf.find("\r\n");
 			size_t pos = buf.find("\n");
 
 			if (pos == std::string::npos)
@@ -175,7 +137,6 @@ void    Server::clientRequest(int i)
 			if (!line.empty() && line[line.size() - 1] == '\r')
 				line.erase(line.size() - 1);
 
-			//buf.erase(0, pos + 2);
 			buf.erase(0, pos + 1);
 
 			if (line.empty())
@@ -185,131 +146,26 @@ void    Server::clientRequest(int i)
 			if (tokens.empty())
 				continue;
 
-			std::string cmd = tokens[0];
-			std::vector<std::string> params;
-			for (size_t i = 1; i < tokens.size(); i++)
-				params.push_back(tokens[i]);
-
 			std::cout << "cmd = " << tokens[0] << std::endl;
-			if (cmd == "PASS")
-			{
-				if (tokens.size() < 2)
-					continue;
-				if (tokens[1] == _password)
-				{
-					_users[fd].setPassOK(true);
 
-					//DEBUG
-					std::string temp1 = "Password set successfully. \r\n";
-					std::cout << temp1 << std::endl << "PasswordOK is: " << _users[fd].getPassOK() << std::endl;
+			ACmd* command = CmdFactory::createCommand(tokens);
+	
+			if (command != NULL) {
+				try {
+					command->execute(_users[fd], *this);
+				} catch (const std::exception& e) {
+					std::cerr << "Error: Exception occurred during command execution: " << e.what() << std::endl;
 				}
-			}
-			else if (cmd == "USER")
-			{
-				if (tokens.size() > 4)
-				{
-					_users[fd].setRealName(tokens[4]);
-					_users[fd].setHasUser(true);
-
-					//DEBUG
-					std::string temp1 = "User set successfully. \r\n";
-					std::cout << temp1 << std::endl << "UserOK is: " << _users[fd].getHasUser() << std::endl;
-					std::cout << "User is: " << _users[fd].getFullname() << std::endl;
-				}
-			}
-			else if (cmd == "NICK")
-			{
-				/*if (tokens.size() > 1)
-				{
-					_users[fd].setNickname(tokens[1]);
-					_users[fd].setHasNick(true);
-
-					//DEBUG
-					std::string temp1 = "Nickname set successfully. \r\n";
-					std::cout << temp1 << std::endl << "NicknameOK is: " << _users[fd].getHasNick() << std::endl;
-					std::cout << "Nickname is: " << _users[fd].getNickname() << std::endl;
-				}*/
-				CmdNick nickCmd(cmd, params);
-				nickCmd.execute(_users[fd], *this);
-				
-			}
-			else if (cmd == "PRIVMSG")
-			{
-				// 1. Validate input:
-				if (tokens.size() < 3)
-				{
-				//      send error: ERR_NEEDMOREPARAMS
-					  continue;
-				}
-
-				if (!_users[fd].getRegistered())
-					  continue;
-
-				// 2. Extract data:
-
-				std::string target = tokens[1];
-				std::string text = tokens[2];
-
-				if (target[0] == '#')
-				{
-				//    Channel ch; // set to the right channel
-				//      ->channel message (LATER)
-				//    std::string msg = ":" + text;
-					//ch.broadcast(msg, users[fd]);
-				// TODO later
-					continue;
-				}
-				
-				// else -> user message
-
-				else
-				{
-					User *targetUser = getUserByNick(target);
-					if (!targetUser)
-					{
-						std::string err = ":localhost 401 " + _users[fd].getNickname() + " " + target +" :No such nick\r\n";
-						send(fd, err.c_str(), err.size(), 0);
-						continue;
-					}
-					int target_fd = (*targetUser).getFd();
-					std::string msg = ":" + _users[fd].getNickname() + " PRIVMSG " + target + " :" + text + "\r\n";
-					send(target_fd, msg.c_str(), msg.size(), 0);
-				}
-				// 3. Find user (user message):
-				// User *targetUser = findUserByNick(target); ------- implement this (loop through users map)
-				//         then send message: 
-				//              std::string msg = ":" + users[fd].getNickName() + " PRIVMSG " + target + " :" + text + "\r\n";
-				//              send(target_fd, msg.c_str(), msg.size(), 0);
-
-				// 4. Channel case - later (use Channel::broadcast())
-			}
-			else if (cmd == "JOIN")
-			{
-				/*if (tokens.size() < 2)
-					continue;
-
-				std::string channelName = tokens[1];
-				Channel* ch = findChannel(channelName);
-				if (!ch)
-					ch = createChannel(channelName, &_users[fd]);
-				int result = ch->addUser(&_users[fd], "");
-				std::string joinMsg = ":" + _users[fd].getNickname() + " JOIN " + channelName + "\r\n";
-				ch->broadcast(joinMsg, NULL);*/
-				CmdJoin joinCmd(cmd, params);
-				joinCmd.execute(_users[fd], *this);
+				delete command;
 			}
 
-			if (!_users[fd].getRegistered() && _users[fd].getPassOK() && _users[fd].getHasNick() && _users[fd].getHasUser())
-			{
-				_users[fd].setRegistered(true);
-				std::string welcome = ":" + std::string("localhost") + " 001 " + _users[fd].getNickname() + " :Welcome to our IRC server\r\n";
-				send(fd, welcome.c_str(), welcome.size(), 0);
+			if (this->_users.find(fd) == this->_users.end()) {
+				return;
 			}
 		}
 	}
 	else if (bytes == 0)
 	{
-		// disconnect client
 		std::cout << "Client disconnected: " << fd << std::endl;
 		removeUser(i);
 	}
@@ -324,12 +180,8 @@ void    Server::clientRequest(int i)
 
 void    Server::removeUser(int i)
 {
-	// GOAL: fully remove a client
-	// 1. Get fd:
 	int fd = _user_poll[i].fd;
-	// 2. Close socket:
 	close(fd);
-	// 3. Remove from user map:
 	_users.erase(fd);
 	if (i < (int)_fd_count - 1) {
 		_user_poll[i] = _user_poll[_fd_count - 1];
@@ -360,14 +212,12 @@ void	Server::removeChannel(std::string channelName) {
 
 void Server::run()
 {
-	setSocket(); //add check for success..?
+	setSocket();
 
 	while (true)
 	{
-//      std::cout << "entering poll loop..." << std::endl;
-		if (poll(_user_poll, _fd_count, -1) < 0)          // change -1 to 0
+		if (poll(_user_poll, _fd_count, -1) < 0)
 			throw Server::RunTimeError("Error: poll failed.");
-		//unsigned int current_size = fd_count;
 		for (unsigned int i = 0; i < _fd_count; i++) {
 			if (_user_poll[i].revents & POLLIN) {
 				if (_user_poll[i].fd == _server_fd) {

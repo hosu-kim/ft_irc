@@ -14,6 +14,7 @@
 #include <signal.h>
 #include <map>
 #include <algorithm>
+#include <ctime>
 
 class Channel;
 
@@ -51,10 +52,14 @@ class User
 		void    setHasNick(bool flag);
 		void    setPassOK(bool flag);
 
+		// ACTIVITY TRACKING
+		void    updateActivity();
+		time_t  getLastActivity() const;
+
 		// MEMBER FUNCTIONS
 		void reply(std::string msg);
 		void joinChannel(Channel* channel);
-		void removeChannel(Channel* channel);
+		void leaveChannel(Channel* channel);
 
 	private:
 
@@ -65,11 +70,13 @@ class User
 
 		std::map<std::string, Channel*> _joinedChannels;
 
-		int fd;
+		int _fd;
 
 		bool	registered;
-		bool    has_user;
-		bool    has_nick;
-		bool    pass_ok;
+		bool    _hasUser;
+		bool    _hasNick;
+		bool    _passOk;
+		
+		time_t  _lastActivity;
 
 };

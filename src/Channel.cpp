@@ -4,10 +4,13 @@
 /* ======================== Orthodox Canonical Form ========================= */
 
 Channel::Channel(const std::string& channelName, User* channelOperator)
-	: _channelName(channelName), _channelPassword("")
+	: _channelName(channelName), _channelPassword(""),
+	  _isInviteOnly(false), _isTopicRestricted(false),
+	  _hasKey(false), _memberLimit(0)
 {
 	this->_channelMembers[channelOperator->getNickname()] = channelOperator;
 	this->_channelOperators.insert(channelOperator->getNickname());
+	channelOperator->joinChannel(this);
 }
 
 Channel::Channel(const Channel& src) {
@@ -87,6 +90,10 @@ std::string Channel::getChannelTopic() const {
 	return this->_channelTopic;
 }
 
+const std::map<std::string, User*>& Channel::getMembers() const {
+	return _channelMembers;
+}
+
 void Channel::setChannelTopic(std::string topic) {
 	this->_channelTopic = topic;
 }
@@ -120,6 +127,8 @@ int Channel::addUser(User* user, std::string password) {
 	// 4. User entry approval and removes user from the invited users
 	_channelMembers[user->getNickname()] = user;
 	_invitedUsers.erase(user->getNickname());
+	user->joinChannel(this);
+
 	return 0; // Success
 }
 
@@ -134,6 +143,7 @@ int Channel::removeUser(User* user) {
 
 	// 3. Deletes user in the channel operaters
 	_channelOperators.erase(nickname);
+	user->leaveChannel(this);
 
 	return 0;
 }
@@ -171,8 +181,6 @@ int Channel::removeOperator(User* user) {
 	// 3. remove the user from the operator list
 	_channelOperators.erase(nickname);
 
-	// 4. remove the channel from the joined channel list.
-	user->removeChannel(this);
 	return 0;
 }
 
@@ -192,6 +200,23 @@ void Channel::removeInvite(const std::string& nickname) {
 	_invitedUsers.erase(nickname);
 
 	std::cout << "[Channel] " << _channelName << ": " << nickname << " removed from invite list." << std::endl;
+}
+
+void Channel::updateUserNick(const std::string& oldNick, const std::string& newNick) {
+	std::map<std::string, User*>::iterator it = _channelMembers.find(oldNick);
+	if (it != _channelMembers.end()) {
+		User* user = it->second;
+		_channelMembers.erase(it);
+		_channelMembers[newNick] = user;
+	}
+
+	std::set<std::string>::iterator opIt = _channelOperators.find(oldNick);
+	if (opIt != _channelOperators.end()) {
+		_channelOperators.erase(opIt);
+		_channelOperators.insert(newNick);
+	}
+
+	
 }
 
 /* Except the sender(exceptUser), all members receive the message*/

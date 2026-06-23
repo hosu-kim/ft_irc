@@ -1,12 +1,13 @@
 #include "User.hpp"
 #include "Channel.hpp"
 
-User::User() : _userName(""), _nickname(""), _realName(""), _hostName(""), registered(false), has_nick(false), has_user(false), pass_ok(false)
-{}
+User::User() : _userName(""), _nickname(""), _realName(""), _hostName(""), registered(false), _hasNick(false), _hasUser(false), _passOk(false) {
+	_lastActivity = time(NULL);
+}
 
-User::User(int user_fd) : _userName(""), _nickname(""), _realName(""), _hostName(""), registered(false),
-fd(user_fd)
-{}
+User::User(int user_fd) : _userName(""), _nickname(""), _realName(""), _hostName(""), registered(false), _hasNick(false), _hasUser(false), _passOk(false), _fd(user_fd) {
+	_lastActivity = time(NULL);
+}
 
 
 /* ****************** GETTERS **************************** */
@@ -32,7 +33,7 @@ std::string User::getHostName() const
 }
 
 int User::getFd() const {
-	return (fd);
+	return (_fd);
 }
 
 bool    User::getRegistered()
@@ -42,17 +43,17 @@ bool    User::getRegistered()
 
 bool    User::getHasNick()
 {
-	return (has_nick);
+	return (_hasNick);
 }
 
 bool    User::getHasUser()
 {
-	return (has_user);
+	return (_hasUser);
 }
 
 bool    User::getPassOK()
 {
-	return (pass_ok);
+	return (_passOk);
 }
 
 const std::map<std::string, Channel*>& User::getJoinedChannels() const {
@@ -61,41 +62,48 @@ const std::map<std::string, Channel*>& User::getJoinedChannels() const {
 
 /* **************** SETTERS ************************ */
 
-void User::setUserName(std::string _userName)
-	{_userName = _userName;}
+void User::setUserName(std::string userName)
+	{this->_userName = userName;}
 
-void User::setNickname(std::string _nickname) 
-	{_nickname = _nickname;}
+void User::setNickname(std::string nickname) 
+	{this->_nickname = nickname;}
 
-void User::setRealName(std::string _realName) 
-	{_realName = _realName;}
+void User::setRealName(std::string realName) 
+	{this->_realName = realName;}
 
-void User::setHostmask(std::string _hostmask) 
-	{_hostName = _hostmask;}
+void User::setHostmask(std::string hostmask) 
+	{this->_hostName = hostmask;}
 
 void    User::setRegistered(bool flag)
-	{registered = flag;}
+	{this->registered = flag;}
 
 void    User::setHasUser(bool flag)
-	{has_user = flag;}
+	{this->_hasUser = flag;}
 
 void    User::setHasNick(bool flag)
-	{has_nick = flag;}
+	{this->_hasNick = flag;}
 
 void    User::setPassOK(bool flag)
-	{pass_ok = flag;}
+	{this->_passOk = flag;}
 
 /* **************** LOGIC FUNCTIONS ************************ */
 void User::reply(std::string msg) {
 	std::string fullMsg = msg + "\r\n";
 	// ssize_t send(int sockfd, const void *buf, size_t len, int flags);
-	send(fd, fullMsg.c_str(), fullMsg.size(), 0);
+	send(_fd, fullMsg.c_str(), fullMsg.size(), 0);
 }
 
 void User::joinChannel(Channel* channel) {
 	this->_joinedChannels[channel->getChannelName()] = channel;
 }
 
-void User::removeChannel(Channel* channel) {
+void User::leaveChannel(Channel* channel) {
 	this->_joinedChannels.erase(channel->getChannelName());
+}
+void User::updateActivity() {
+	_lastActivity = time(NULL);
+}
+
+time_t User::getLastActivity() const {
+	return (_lastActivity);
 }

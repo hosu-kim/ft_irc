@@ -81,7 +81,7 @@ void CmdPart::execute(User &user, Server &server) {
 		 * 7. Remove the user from the channel
 		 */
 		chan->removeUser(&user);
-		user.removeChannel(chan);
+		user.leaveChannel(chan);
 
 		/* 
 		 * 8. Clean up the channel if it has no members left

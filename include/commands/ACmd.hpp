@@ -14,8 +14,8 @@
 #include <signal.h>
 #include <vector>
 
-#include "User.hpp"
-#include "Server.hpp"
+#include "../User.hpp"
+#include "../Server.hpp"
 //#include "CmdFactory.hpp"
 // #include "CmdJOIN.hpp"
 
