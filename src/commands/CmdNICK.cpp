@@ -55,14 +55,21 @@ void CmdNick::execute(User &user, Server &server)
 	/*
 	 * 5. Success! Apply the new nickname
 	 */
-	std::string old_nick = user.getNickname();
-	user.setNickname(getParam(0));
+	std::string oldNick = user.getNickname();
+	std::string newNick = getParam(0);
+	user.setNickname(newNick);
 	user.setHasNick(true);
+
+	std::map<std::string, Channel*> joined = user.getJoinedChannels();
+
+	for (std::map<std::string, Channel*>::iterator it = joined.begin(); it != joined.end(); ++it) {
+		it->second->updateUserNick(oldNick, newNick);
+	}
 
 	/*
 	 * 6. Announce the NICK change
 	 */
-	std::string success_msg = ":" + old_nick + "!" + user.getUserName() + "@" + user.getHostName() + " NICK :" + user.getNickname();
+	std::string success_msg = ":" + oldNick + "!" + user.getUserName() + "@" + user.getHostName() + " NICK :" + user.getNickname();
 	user.reply(success_msg);
 
 	/**

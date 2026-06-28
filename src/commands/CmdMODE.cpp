@@ -77,7 +77,7 @@ void CmdMode::execute(User &user, Server &server) {
 	std::string modeStr = this->getParam(1);
 	// - The mode string must start with '+' or '-' (e.g., "+k", "-i").
 	// - If it does not start with '+' or '-', it is invalid. Return to ignore.
-	if (modeStr.empty() || (modeStr[0]) != '+' && modeStr[0] != '-') {
+	if (modeStr.empty() || ((modeStr[0]) != '+' && modeStr[0] != '-')) {
 		return;
 	}
 

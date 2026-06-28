@@ -35,8 +35,8 @@ void CmdQuit::execute(User &user, Server &server) {
 	 * 3. Broadcast to others & Remove the user
 	 */
 	std::map<std::string, Channel*> joinedChannels = user.getJoinedChannels();
-	//      - Find all channels this user is in.
-	//      - channel->broadcast(formattedMsg, &user);
+	// - Find all channels this user is in.
+	// - channel->broadcast(formattedMsg, &user);
 	for (std::map<std::string, Channel*>::iterator it = joinedChannels.begin(); it != joinedChannels.end(); ++it) {
 		Channel* channel = it->second;
 

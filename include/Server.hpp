@@ -77,15 +77,17 @@ class Server
 		};
 
 	private:
+		int 				_port;
+		int					_server_fd;
+		int					_fd_count;
+
 		std::string			_serverName;
 		std::string			_userName;
-		int 				_port;
 		std::string 		_password;
-		int					_server_fd;
+
 		struct sockaddr_in	_addr;
 		std::vector<pollfd>	_fds;
 		pollfd				_user_poll[MAX_CLIENTS];
-		int					_fd_count;
 		user_map			_users;
 		channel_map			_channels;
 };

@@ -1,11 +1,18 @@
 #include "User.hpp"
 #include "Channel.hpp"
 
-User::User() : _userName(""), _nickname(""), _realName(""), _hostName(""), registered(false), _hasNick(false), _hasUser(false), _passOk(false) {
+User::User() : _userName(""), _nickname(""),
+			   _realName(""), _hostName(""),
+			   registered(false), _hasUser(false),
+			   _hasNick(false), _passOk(false) {
 	_lastActivity = time(NULL);
 }
 
-User::User(int user_fd) : _userName(""), _nickname(""), _realName(""), _hostName(""), registered(false), _hasNick(false), _hasUser(false), _passOk(false), _fd(user_fd) {
+User::User(int user_fd) : _fd(user_fd),
+						  _userName(""), _nickname(""),
+						  _realName(""), _hostName(""),
+						  registered(false), _hasUser(false),
+						  _hasNick(false), _passOk(false) {
 	_lastActivity = time(NULL);
 }
 

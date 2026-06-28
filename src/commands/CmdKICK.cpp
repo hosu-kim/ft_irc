@@ -30,7 +30,7 @@ void CmdKick::execute(User &user, Server &server) {
 	 */
 	std::string channelName = this->_params[0];
 	std::string targetNick = this->_params[1];
-	std::string reason = (this->_params.size() > 2) ? this->_params[2] : "No reason given"; // Default reason
+	std::string reason = (this->_params.size() > 2) ? this->combine_params_with_spaces(2) : "No reason given"; // Default reason
 	/* 
 	 * 3. Check if the channel exists in the Server
 	 */

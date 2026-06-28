@@ -45,7 +45,7 @@ void CmdInvite::execute(User &user, Server &server) {
 	// (4) if `targetNick` exists in the server
 	User* targetUser = server.getUserByNick(targetNick);
 	if (targetUser == NULL) {
-		std::string msg = ':' + server.getServerName() + " 401 " + user.getNickname() + " " + targetNick + " :No such nick/channel";
+		std::string msg = ":" + server.getServerName() + " 401 " + user.getNickname() + " " + targetNick + " :No such nick/channel";
 		user.reply(msg);
 		return;
 	}

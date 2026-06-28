@@ -40,7 +40,7 @@ void CmdPrivmsg::execute(User &user, Server &server) {
 	 * 2. Extract target and chat message
 	 */
 	std::string target = this->getParam(0);
-	std::string chatMsg = this->getParam(1);
+	std::string chatMsg = this->combine_params_with_spaces(1);
 
 	/*
 	* 3. Route the message: Is it a Channel or a User?

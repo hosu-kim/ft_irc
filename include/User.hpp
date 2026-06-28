@@ -63,14 +63,14 @@ class User
 
 	private:
 
+		int _fd;
+
 		std::string _userName;
 		std::string _nickname;
 		std::string _realName;
 		std::string _hostName;
 
 		std::map<std::string, Channel*> _joinedChannels;
-
-		int _fd;
 
 		bool	registered;
 		bool    _hasUser;

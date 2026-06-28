@@ -3,9 +3,9 @@
 #include "commands/CmdNICK.hpp"
 #include "commands/CmdJOIN.hpp"
 
-Server::Server() : _userName("localhost"), _port(0), _server_fd(-1), _fd_count(0) {}
+Server::Server() : _port(0), _server_fd(-1), _fd_count(0), _serverName("ft_irc"), _userName("localhost") {}
 
-Server::Server(char **argv) : _userName("localhost"), _port(atoi(argv[1])), _password(argv[2])
+Server::Server(char **argv) : _port(atoi(argv[1])), _serverName("ft_irc"), _userName("localhost"), _password(argv[2])
 {
 	if (_port <= 0 || _port > MAX_PORT_NUMBER)
 		throw Server::RunTimeError("Invalid port.");
@@ -16,7 +16,14 @@ Server::Server(char **argv) : _userName("localhost"), _port(atoi(argv[1])), _pas
 Server::~Server()
 {
 	std::cout << "Server shutting down..." << std::endl;
-	close(_server_fd);
+	for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
+		delete it->second;
+
+	}
+
+	for (int i = 0; i < _fd_count; ++i) {
+		close(_user_poll[i].fd);
+	}
 }
 
 std::string Server::getUserName() const { return _userName; }
@@ -64,6 +71,7 @@ void    Server::newClient(void)
 	while (true)
 	{
 		user_fd = accept(_server_fd, (sockaddr *)&useraddr, &addrlen);
+
 		if (user_fd < 0)
 		{
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
@@ -79,10 +87,11 @@ void    Server::newClient(void)
 		else
 		{
 			fcntl(user_fd, F_SETFL, O_NONBLOCK);
-			_user_poll[_fd_count].fd = user_fd;
-			_user_poll[_fd_count].events = POLLIN;
-			_fd_count++;
-			_users[user_fd] = User(user_fd);
+			this->_user_poll[_fd_count].fd = user_fd;
+			this->_user_poll[_fd_count].events = POLLIN;
+			this->_fd_count++;
+			this->_users[user_fd] = User(user_fd);
+			this->_users[user_fd].setHostmask(inet_ntoa(useraddr.sin_addr));
 		}
 	}
 }
@@ -146,17 +155,39 @@ void    Server::clientRequest(int i)
 			if (tokens.empty())
 				continue;
 
-			std::cout << "cmd = " << tokens[0] << std::endl;
+			std::string cmdName = tokens[0];
+
+			// Capizalizes user input: e.g., join -> JOIN
+			for (size_t i = 0; i <cmdName.size(); ++i) {
+				cmdName[i] = std::toupper(cmdName[i]);
+			}
+
+			std::cout << "cmd = " << cmdName << std::endl;
+
+			User &user = _users[fd];
+			if (!user.getRegistered() &&
+				cmdName != "PASS" && cmdName != "NICK" &&
+				cmdName != "USER" && cmdName != "QUIT" &&
+				cmdName != "PING" && cmdName != "PONG") {
+				std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
+				std::string errMsg = ":" + this->getServerName() + " 451 " + nick + " :You have not registered";
+				_users[fd].reply(errMsg);
+				continue;
+			}
 
 			ACmd* command = CmdFactory::createCommand(tokens);
 	
 			if (command != NULL) {
 				try {
-					command->execute(_users[fd], *this);
+					command->execute(user, *this);
 				} catch (const std::exception& e) {
 					std::cerr << "Error: Exception occurred during command execution: " << e.what() << std::endl;
 				}
 				delete command;
+			} else {
+				std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
+				std::string errMsg = ":" + this->getServerName() + " 421 " + nick + " " + cmdName + " :Unknown command";
+				user.reply(errMsg);
 			}
 
 			if (this->_users.find(fd) == this->_users.end()) {
@@ -178,9 +209,24 @@ void    Server::clientRequest(int i)
 	}
 }
 
-void    Server::removeUser(int i)
+void Server::removeUser(int i)
 {
 	int fd = _user_poll[i].fd;
+	user_map::iterator it = _users.find(fd);
+
+	if (it != _users.end()) {
+		User &user = it->second;
+		std::map<std::string, Channel*> joinedChannels = user.getJoinedChannels();
+		for (std::map<std::string, Channel*>::iterator chanIt = joinedChannels.begin(); chanIt != joinedChannels.end(); ++chanIt) {
+			Channel* channel = chanIt->second;
+
+			channel->removeUser(&user);
+			if (channel->getMemberCount() == 0) {
+				this->removeChannel(channel->getChannelName());
+			}
+		}
+	}
+
 	close(fd);
 	_users.erase(fd);
 	if (i < (int)_fd_count - 1) {
@@ -194,7 +240,7 @@ void    Server::removeUser(int i)
 void Server::removeUser(User &user) {
 	int fd = user.getFd();
 
-	for (unsigned int i = 0; i < _fd_count; i++) {
+	for (int i = 0; i < _fd_count; i++) {
 		if (_user_poll[i].fd == fd) {
 			this->removeUser(i);
 			return;
@@ -218,13 +264,13 @@ void Server::run()
 	{
 		if (poll(_user_poll, _fd_count, -1) < 0)
 			throw Server::RunTimeError("Error: poll failed.");
-		for (unsigned int i = 0; i < _fd_count; i++) {
+		for (int i = 0; i < _fd_count; i++) {
 			if (_user_poll[i].revents & POLLIN) {
 				if (_user_poll[i].fd == _server_fd) {
 					newClient();
 				}
 				else {
-					unsigned int count_before = _fd_count;
+					int count_before = _fd_count;
 					clientRequest(i);
 
 					if (_fd_count < count_before) {
