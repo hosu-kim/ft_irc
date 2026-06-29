@@ -31,7 +31,7 @@ SRCS = $(addprefix $(SRC_DIR)/, $(FILES))
 OBJS = $(addprefix $(OBJ_DIR)/, $(FILES:.cpp=.o))
 
 COMPILER = c++
-FLAGS = -Wall -Wextra -Werror -std=c++98 -I$(INC_DIR) -I$(INC_DIR)/commands
+FLAGS = -g -Wall -Wextra -Werror -std=c++98 -I$(INC_DIR) -I$(INC_DIR)/commands
 RM = rm -rf
 
 all: $(NAME)

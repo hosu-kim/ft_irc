@@ -3,13 +3,25 @@
 #include "commands/CmdNICK.hpp"
 #include "commands/CmdJOIN.hpp"
 
-Server::Server() : _port(0), _server_fd(-1), _fd_count(0), _serverName("ft_irc"), _userName("localhost") {}
+static bool g_server_run = true;
+
+// Avoids still reachable memory blocks when to press Ctrl+C on Valgrind
+void signal_handler(int signum) {
+	(void)signum;
+	g_server_run = false;
+}
+
+Server::Server() : _port(0), _server_fd(-1), _fd_count(0), _serverName("ft_irc"), _userName("localhost") {
+	// Empty_user_poll with 0 to avoid that it has gabage values => causes memery leaks
+	std::memset(_user_poll, 0, sizeof(_user_poll));
+}
 
 Server::Server(char **argv) : _port(atoi(argv[1])), _serverName("ft_irc"), _userName("localhost"), _password(argv[2])
 {
 	if (_port <= 0 || _port > MAX_PORT_NUMBER)
 		throw Server::RunTimeError("Invalid port.");
 	
+	std::memset(_user_poll, 0, sizeof(_user_poll));
 	std::cout << "Creating a server..." << std::endl;
 }
 
@@ -56,6 +68,7 @@ void Server::setSocket()
 
 	_user_poll[0].fd = _server_fd;
 	_user_poll[0].events = POLLIN;
+	_user_poll[0].revents = 0;
 	_fd_count = 1;
 	std::cout << "setSocket() finished..." << std::endl;
 }
@@ -89,6 +102,7 @@ void    Server::newClient(void)
 			fcntl(user_fd, F_SETFL, O_NONBLOCK);
 			this->_user_poll[_fd_count].fd = user_fd;
 			this->_user_poll[_fd_count].events = POLLIN;
+			this->_user_poll[_fd_count].revents = 0;
 			this->_fd_count++;
 			this->_users[user_fd] = User(user_fd);
 			this->_users[user_fd].setHostmask(inet_ntoa(useraddr.sin_addr));
@@ -258,12 +272,17 @@ void	Server::removeChannel(std::string channelName) {
 
 void Server::run()
 {
+	signal(SIGINT, signal_handler);
+
 	setSocket();
 
-	while (true)
+	while (g_server_run)
 	{
-		if (poll(_user_poll, _fd_count, -1) < 0)
+		if (poll(_user_poll, _fd_count, -1) < 0) {
+			if (errno == EINTR) // Avoids poll failure by Ctrl+C etc.
+				continue;
 			throw Server::RunTimeError("Error: poll failed.");
+		}
 		for (int i = 0; i < _fd_count; i++) {
 			if (_user_poll[i].revents & POLLIN) {
 				if (_user_poll[i].fd == _server_fd) {
