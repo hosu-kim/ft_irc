@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ACmd.hpp"
+#include <sstream>
 
 class CmdMode : public ACmd {
 	public:

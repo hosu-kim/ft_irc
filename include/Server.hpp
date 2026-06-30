@@ -1,31 +1,14 @@
 #pragma once
 
-#include <iostream>
-#include <cstring>
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <string>
+#include <map>
+#include <vector>
+#include <exception>
 #include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <poll.h>
-#include <signal.h>
 
 #include "User.hpp"
-//#include "ACmd.hpp"
 #include "Channel.hpp"
-
-#include <map>
-#include <exception>
-#include <string>
-#include <sstream>
-
-#include <stdlib.h>
-
-#include <cerrno>
-#include <vector>
 
 #define MAX_PORT_NUMBER 65535
 #define MAX_CLIENTS 1024

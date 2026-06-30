@@ -1,5 +1,9 @@
 #include "User.hpp"
 #include "Server.hpp"
+#include <stdexcept>
+#include <cstdlib>
+#include <cctype>
+#include <iostream>
 
 void check_port(char* argv1)
 {

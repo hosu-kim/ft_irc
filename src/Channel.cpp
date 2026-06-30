@@ -1,5 +1,8 @@
 #include "Channel.hpp"
 #include "User.hpp"
+#include <iostream>
+#include <sys/socket.h>
+#include <sstream>
 
 /* ======================== Orthodox Canonical Form ========================= */
 

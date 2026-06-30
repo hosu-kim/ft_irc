@@ -1,5 +1,8 @@
 #include "ACmd.hpp"
 #include "User.hpp"
+#include <stdexcept>
+#include <sstream>
+#include <stdexcept>
 
 // ORTHODOX CANONICAL FORM
 ACmd::ACmd() {}

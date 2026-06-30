@@ -1,5 +1,8 @@
 #include "User.hpp"
 #include "Channel.hpp"
+#include <unistd.h>     // close()
+#include <sys/socket.h> // send/recv
+#include <iostream>     // std::cout
 
 User::User() : _userName(""), _nickname(""),
 			   _realName(""), _hostName(""),

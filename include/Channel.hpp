@@ -1,23 +1,10 @@
 #pragma once
 
-#include <iostream>
-#include <cstring>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <poll.h>
-#include <signal.h>
-#include <map> // std::map
-#include <set> // std::set
-#include <exception>
-#include <sstream>
+#include <string>
+#include <map>
+#include <set>
 
-#include "User.hpp"
+class User;
 
 class Channel {
 	private:
