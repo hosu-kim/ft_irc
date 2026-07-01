@@ -20,105 +20,40 @@ void signal_handler(int signum) {
 	g_server_run = false;
 }
 
-Server::Server() : _port(0), _server_fd(-1), _fd_count(0), _serverName("ft_irc"), _userName("localhost") {
-	// Empty_user_poll with 0 to avoid that it has gabage values which cause memery leaks
-	std::memset(_user_poll, 0, sizeof(_user_poll));
+// _serverFd(-1) => -1: signal which shows socket is not opened yet.
+Server::Server() : _port(0), _serverFd(-1), _fdCount(0), _serverName("ft_irc"), _userName("localhost") {
+	// Initialize _userPoll to 0 to prevent garbage values from causing memory errors
+	std::memset(_userPoll, 0, sizeof(_userPoll));
 }
 
 Server::Server(char **argv) : _port(atoi(argv[1])), _serverName("ft_irc"), _userName("localhost"), _password(argv[2])
 {
 	if (_port <= 0 || _port > MAX_PORT_NUMBER)
 		throw Server::RunTimeError("Invalid port.");
-	
-	std::memset(_user_poll, 0, sizeof(_user_poll));
+
+	// Initialize _userPoll to 0 to prevent garbage values from causing memory errors
+	std::memset(_userPoll, 0, sizeof(_userPoll));
+
 	std::cout << "Creating a server..." << std::endl;
 }
 
-Server::~Server()
-{
+Server::~Server() {
 	std::cout << "Server shutting down..." << std::endl;
-	for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
+
+	// Free dynamically allocated channels to prevent memory leaks (=heap allocation => Channel* newChan = new...)
+	for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
 		delete it->second;
 
-	}
-
-	for (int i = 0; i < _fd_count; ++i) {
-		close(_user_poll[i].fd);
-	}
+	for (int i = 0; i < _fdCount; ++i)
+		close(_userPoll[i].fd);
 }
 
-std::string Server::getUserName() const { return _userName; }
+// GETTERS
 std::string Server::getServerName() const { return _serverName; }
+std::string Server::getUserName() const { return _userName; }
 std::string Server::getPassword() const { return _password; }
-
-void Server::setSocket()
-{
-	_server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (_server_fd < 0)
-		throw Server::RunTimeError("socket() failed.");
-
-	int opt = 1;
-	if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
-		throw Server::RunTimeError("Failed to set option (SO_REUSEADDR) on socket.");
-	
-	if (fcntl(_server_fd, F_SETFL, O_NONBLOCK) == -1)
-		throw Server::RunTimeError("fcntl() failed.");
-	
-	memset(&_addr, 0, sizeof(_addr));
-	_addr.sin_family = AF_INET;
-	_addr.sin_addr.s_addr = INADDR_ANY;
-	_addr.sin_port = htons(_port);
-
-	if (bind(_server_fd, (struct sockaddr *)&_addr, sizeof(_addr)) == -1)
-		throw Server::RunTimeError("Failed to bind socket.");
-	
-	if (listen(_server_fd, SOMAXCONN) < 0)
-		throw Server::RunTimeError("listen() failed.");
-
-	_user_poll[0].fd = _server_fd;
-	_user_poll[0].events = POLLIN;
-	_user_poll[0].revents = 0;
-	_fd_count = 1;
-	std::cout << "setSocket() finished..." << std::endl;
-}
-
-
-void    Server::newClient(void)
-{
-	int user_fd;
-	struct sockaddr_in   useraddr;
-	socklen_t   addrlen = sizeof(useraddr);
-
-	user_fd = accept(_server_fd, (sockaddr *)&useraddr, &addrlen);
-
-	if (user_fd < 0)
-	{
-		if (errno == EWOULDBLOCK || errno == EAGAIN)
-			return;
-		else
-			throw Server::RunTimeError("accept() failed.");
-	}
-	if (_fd_count >= MAX_CLIENTS)
-	{
-		close(user_fd);
-		return;
-	}
-	else
-	{
-		fcntl(user_fd, F_SETFL, O_NONBLOCK);
-		this->_user_poll[_fd_count].fd = user_fd;
-		this->_user_poll[_fd_count].events = POLLIN;
-		this->_user_poll[_fd_count].revents = 0;
-		this->_fd_count++;
-		this->_users[user_fd] = User(user_fd);
-		this->_users[user_fd].setHostmask(inet_ntoa(useraddr.sin_addr));
-	}
-}
-
-User* Server::getUserByNick(const std::string& nick)
-{
-	for (std::map<int, User>::iterator it = _users.begin(); it != _users.end(); ++it)
-	{
+User* Server::getUserByNick(const std::string& nick) {
+	for (std::map<int, User>::iterator it = _users.begin(); it != _users.end(); ++it) {
 		if (it->second.getNickname() == nick)
 			return &(it->second);
 	}
@@ -126,10 +61,58 @@ User* Server::getUserByNick(const std::string& nick)
 }
 
 Channel* Server::getChannel(std::string channelName) {
-	channel_map::iterator it = _channels.find(channelName);
+	// typedef std::map<std::string, Channel*>	channelMap;
+	channelMap::iterator it = _channels.find(channelName);
 	if (it != _channels.end())
-		return it->second; // found
+		return it->second;
 	return NULL;
+}
+
+// SETTERS
+void Server::setSocket() {
+	// socket(A. domain, B. type, C. protocol)
+	// => Create a socket endpoint for network communication
+	// A. AF_INET: IPv4 address family
+	// B. SOCK_STREAM: Connection-oriented TCP protocol
+	// C. 0: Use default protocol for the domain and type
+	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverFd < 0)
+		throw Server::RunTimeError("socket() failed.");
+
+	int opt = 1;
+	// setsockopt(A. socket, B. level, C. option_name, D. option_val, E. value_len)
+	// => Set socket options
+	// C. SO_REUSEADDR: Allow immediate port reuse to prevent TIME_WAIT binding errors
+	// - TIME_WAIT? When the server exits or crashes, the OS temporarily locks
+	//              the port in a TIME_WAIT state (usually for 1-2 minutes) for safety
+	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+		throw Server::RunTimeError("Failed to set option (SO_REUSEADDR) on socket.");
+	
+	// fcntl() => File Control; Set the socket to non-blocking mode
+	// - F_SETFL: Set fiile status flags
+	// - O_NONBLOCK: Enable non-blocking I/O
+	// - Non-blocking? Makes socket calls (like accept/recv) return immediately without waiting
+	if (fcntl(_serverFd, F_SETFL, O_NONBLOCK) == -1)
+		throw Server::RunTimeError("fcntl() failed.");
+	
+	memset(&_serverAddr, 0, sizeof(_serverAddr));
+	_serverAddr.sin_family = AF_INET; // IP4v
+	_serverAddr.sin_addr.s_addr = INADDR_ANY; // Allows every connection from any IP address
+	_serverAddr.sin_port = htons(_port); // Convert port number to network byte order
+
+	// Bind the socket to the server address
+	if (bind(_serverFd, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) == -1)
+		throw Server::RunTimeError("Failed to bind socket.");
+	
+	// Start listening for incoming connections with the maximum backlog queue
+	if (listen(_serverFd, SOMAXCONN) < 0)
+		throw Server::RunTimeError("listen() failed.");
+
+	_userPoll[0].fd = _serverFd;
+	_userPoll[0].events = POLLIN; // Monitor for incoming connections
+	_userPoll[0].revents = 0;
+	_fdCount = 1;
+	std::cout << "setSocket() finished..." << std::endl;
 }
 
 Channel* Server::setChannel(std::string channelName, User* channelOperator) {
@@ -140,11 +123,39 @@ Channel* Server::setChannel(std::string channelName, User* channelOperator) {
 	return newChannel;
 }
 
+void Server::newClient(void)
+{
+	int user_fd;
+	struct sockaddr_in useraddr;
+	socklen_t addrlen = sizeof(useraddr);
+
+	user_fd = accept(_serverFd, (sockaddr *)&useraddr, &addrlen);
+
+	if (user_fd < 0) {
+		if (errno == EWOULDBLOCK || errno == EAGAIN)
+			return;
+		else
+			throw Server::RunTimeError("accept() failed.");
+	}
+	if (_fdCount >= MAX_CLIENTS) {
+		close(user_fd);
+		return;
+	} else {
+		fcntl(user_fd, F_SETFL, O_NONBLOCK);
+		this->_userPoll[_fdCount].fd = user_fd;
+		this->_userPoll[_fdCount].events = POLLIN;
+		this->_userPoll[_fdCount].revents = 0;
+		this->_fdCount++;
+		this->_users[user_fd] = User(user_fd);
+		this->_users[user_fd].setHostmask(inet_ntoa(useraddr.sin_addr));
+	}
+}
+
 void    Server::clientRequest(int i)
 {
 	char buffer[1024];
-	int bytes = recv(_user_poll[i].fd, buffer, sizeof(buffer), 0);
-	int fd = _user_poll[i].fd;
+	int bytes = recv(_userPoll[i].fd, buffer, sizeof(buffer), 0);
+	int fd = _userPoll[i].fd;
 
 	if (bytes > 0)
 	{
@@ -230,8 +241,8 @@ void    Server::clientRequest(int i)
 
 void Server::removeUser(int i)
 {
-	int fd = _user_poll[i].fd;
-	user_map::iterator it = _users.find(fd);
+	int fd = _userPoll[i].fd;
+	userMap::iterator it = _users.find(fd);
 
 	if (it != _users.end()) {
 		User &user = it->second;
@@ -248,19 +259,19 @@ void Server::removeUser(int i)
 
 	close(fd);
 	_users.erase(fd);
-	if (i < (int)_fd_count - 1) {
-		_user_poll[i] = _user_poll[_fd_count - 1];
+	if (i < (int)_fdCount - 1) {
+		_userPoll[i] = _userPoll[_fdCount - 1];
 	}
-	_fd_count--;
+	_fdCount--;
 	
-	std::cout << "[Server] User removed. Current count: " << _fd_count << std::endl;
+	std::cout << "[Server] User removed. Current count: " << _fdCount << std::endl;
 }
 
 void Server::removeUser(User &user) {
 	int fd = user.getFd();
 
-	for (int i = 0; i < _fd_count; i++) {
-		if (_user_poll[i].fd == fd) {
+	for (int i = 0; i < _fdCount; i++) {
+		if (_userPoll[i].fd == fd) {
 			this->removeUser(i);
 			return;
 		}
@@ -268,7 +279,7 @@ void Server::removeUser(User &user) {
 }
 
 void	Server::removeChannel(std::string channelName) {
-	channel_map::iterator it = _channels.find(channelName);
+	channelMap::iterator it = _channels.find(channelName);
 	if (it != _channels.end()) {
 		delete it->second;
 		_channels.erase(it);
@@ -283,32 +294,32 @@ void Server::run()
 
 	while (g_server_run)
 	{
-		if (poll(_user_poll, _fd_count, -1) < 0) {
+		if (poll(_userPoll, _fdCount, -1) < 0) {
 			if (errno == EINTR) // Avoids poll failure by Ctrl+C etc.
 				continue;
 			throw Server::RunTimeError("Error: poll failed.");
 		}
-		for (int i = 0; i < _fd_count; i++) {
-			if (_user_poll[i].revents & POLLIN) {
-				if (_user_poll[i].fd == _server_fd) {
+		for (int i = 0; i < _fdCount; i++) {
+			if (_userPoll[i].revents & POLLIN) {
+				if (_userPoll[i].fd == _serverFd) {
 					newClient();
 				}
 				else {
-					int count_before = _fd_count;
+					int count_before = _fdCount;
 					clientRequest(i);
 
-					if (_fd_count < count_before) {
+					if (_fdCount < count_before) {
 						i--;
 						continue;
 					}
 				}
 			}
-			else if (_user_poll[i].revents & (POLLHUP | POLLERR)) {
+			else if (_userPoll[i].revents & (POLLHUP | POLLERR)) {
 				removeUser(i);
 				i--;
 				continue;
 			}
-			_user_poll[i].revents = 0;
+			_userPoll[i].revents = 0;
 		}
 	}
 }

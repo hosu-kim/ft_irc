@@ -15,10 +15,11 @@
 
 class ACmd;
 
-class Server
-{
-	typedef std::map<int, User>				user_map;
-	typedef std::map<std::string, Channel*>	channel_map;
+class Server {
+	// Stores User objects directly; std::map guarantees pointer stability and automatic cleanup
+	typedef std::map<int, User>				userMap;
+	// Stores channel pointers to avoid heavy copy overhead of channel objects
+	typedef std::map<std::string, Channel*>	channelMap;
 
 	public:
 		Server();
@@ -26,51 +27,49 @@ class Server
 		~Server();
 
 		// GETTERS
-		std::string getUserName() const;
 		std::string getServerName() const;
+		std::string getUserName() const;
 		std::string getPassword() const;
-		Channel*	getChannel(std::string channelName);
 		User*		getUserByNick(const std::string& nick);
+		Channel*	getChannel(std::string channelName);
 
 		// SETTERS
 		void		setSocket();
 		Channel*	setChannel(std::string channelName, User* channelOperator);
 
-		// MEMBER FUNCTIONS
-		void 	run();
-		void	newClient(void);
-		void	clientRequest(int i);
-		void	removeUser(int i);
-		void	removeUser(User &user);
-		void	removeChannel(std::string channelName);
+		// METHODS
+		void		run();
+		void		newClient(void);
+		void		clientRequest(int i);
+		void		removeUser(int i);
+		void		removeUser(User &user);
+		void		removeChannel(std::string channelName);
 
-		class RunTimeError: public std::exception
-		{
+		class RunTimeError: public std::exception {
 			private:
 				std::string msg;
 			public:
-				RunTimeError(const std::string &message) : msg(message)
-				{}
-			virtual ~RunTimeError() throw() 
-			{}
-			virtual const char* what() const throw()
-			{
+				RunTimeError(const std::string &message) : msg(message) {}
+			virtual ~RunTimeError() throw() {}
+			virtual const char* what() const throw() {
 				return msg.c_str();
 			}
 		};
 
 	private:
 		int 				_port;
-		int					_server_fd;
-		int					_fd_count;
+		int					_serverFd;
+		int					_fdCount;
 
 		std::string			_serverName;
 		std::string			_userName;
 		std::string 		_password;
 
-		struct sockaddr_in	_addr;
+		struct sockaddr_in	_serverAddr;
 		std::vector<pollfd>	_fds;
-		pollfd				_user_poll[MAX_CLIENTS];
-		user_map			_users;
-		channel_map			_channels;
+		// pollfd => a struct to request poll() to observe several sockets; array to monitor events on server and client sockets
+		//           Members: int fd, short events, short revents
+		pollfd				_userPoll[MAX_CLIENTS];
+		userMap				_users;
+		channelMap			_channels;
 };
