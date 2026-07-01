@@ -89,33 +89,29 @@ void    Server::newClient(void)
 	struct sockaddr_in   useraddr;
 	socklen_t   addrlen = sizeof(useraddr);
 
+	user_fd = accept(_server_fd, (sockaddr *)&useraddr, &addrlen);
 
-	while (true)
+	if (user_fd < 0)
 	{
-		user_fd = accept(_server_fd, (sockaddr *)&useraddr, &addrlen);
-
-		if (user_fd < 0)
-		{
-			if (errno == EWOULDBLOCK || errno == EAGAIN)
-				break;
-			else
-				throw Server::RunTimeError("accept() failed.");
-		}
-		if (_fd_count >= MAX_CLIENTS)
-		{
-			close(user_fd);
+		if (errno == EWOULDBLOCK || errno == EAGAIN)
 			return;
-		}
 		else
-		{
-			fcntl(user_fd, F_SETFL, O_NONBLOCK);
-			this->_user_poll[_fd_count].fd = user_fd;
-			this->_user_poll[_fd_count].events = POLLIN;
-			this->_user_poll[_fd_count].revents = 0;
-			this->_fd_count++;
-			this->_users[user_fd] = User(user_fd);
-			this->_users[user_fd].setHostmask(inet_ntoa(useraddr.sin_addr));
-		}
+			throw Server::RunTimeError("accept() failed.");
+	}
+	if (_fd_count >= MAX_CLIENTS)
+	{
+		close(user_fd);
+		return;
+	}
+	else
+	{
+		fcntl(user_fd, F_SETFL, O_NONBLOCK);
+		this->_user_poll[_fd_count].fd = user_fd;
+		this->_user_poll[_fd_count].events = POLLIN;
+		this->_user_poll[_fd_count].revents = 0;
+		this->_fd_count++;
+		this->_users[user_fd] = User(user_fd);
+		this->_users[user_fd].setHostmask(inet_ntoa(useraddr.sin_addr));
 	}
 }
 
