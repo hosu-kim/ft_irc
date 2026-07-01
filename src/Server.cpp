@@ -21,7 +21,7 @@ void signal_handler(int signum) {
 }
 
 Server::Server() : _port(0), _server_fd(-1), _fd_count(0), _serverName("ft_irc"), _userName("localhost") {
-	// Empty_user_poll with 0 to avoid that it has gabage values => causes memery leaks
+	// Empty_user_poll with 0 to avoid that it has gabage values which cause memery leaks
 	std::memset(_user_poll, 0, sizeof(_user_poll));
 }
 
