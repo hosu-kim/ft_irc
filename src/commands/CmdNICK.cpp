@@ -75,7 +75,7 @@ void CmdNick::execute(User &user, Server &server)
 	/**
 	 * 7. Check if registration is completed after setting the nickname
 	 */
-	if (!user.getRegistered() && user.getPassOK() == true && user.getHasNick() == true && user.getHasUser() == true) {
+	if (!user.isRegistered() && user.getPassOK() == true && user.getHasNick() == true && user.getHasUser() == true) {
 		user.setRegistered(true);
 		std::string welcomeMsg = ":" + server.getServerName() + " 001 " + user.getNickname() + " :Welcome to the ft_irc Network, " + user.getNickname() + "!" + user.getUserName() + "@" + user.getHostName();
 		user.reply(welcomeMsg);

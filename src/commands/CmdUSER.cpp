@@ -36,7 +36,7 @@ void CmdUser::execute(User &user, Server &server) {
 	 * 2. Check if the user is already registered
 	 */
 	// If the user's username is already set, they cannot call the USER command again.
-	if (user.getRegistered() || !user.getUserName().empty()) {
+	if (user.isRegistered() || !user.getUserName().empty()) {
 		std::string errMsg = ":" + server.getServerName() + " 462 " + nick + " :Unauthorized command (already registered)";
 		user.reply(errMsg);
 		return;

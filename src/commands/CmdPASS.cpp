@@ -29,7 +29,7 @@ void CmdPass::execute(User &user, Server &server) {
 	/*
 	 * 2. Check if the user is already registered
 	 */
-	if (user.getRegistered()) {
+	if (user.isRegistered()) {
 		std::string errMsg = ":" + server.getServerName() + " 462 " + nick + " :Unauthorized command (already registered)";
 		user.reply(errMsg);
 		return;

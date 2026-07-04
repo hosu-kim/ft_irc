@@ -16,60 +16,60 @@
 class ACmd;
 
 class Server {
+private:
 	// Stores User objects directly; std::map guarantees pointer stability and automatic cleanup
-	typedef std::map<int, User>				userMap;
+	typedef std::map<int, User>				UserMap;
 	// Stores channel pointers to avoid heavy copy overhead of channel objects
-	typedef std::map<std::string, Channel*>	channelMap;
+	typedef std::map<std::string, Channel*>	ChannelMap;
 
-	public:
-		Server();
-		Server(char **argv);
-		~Server();
+	int 				port_;
+	int					server_fd_;
+	int					fd_count_;
 
-		// GETTERS
-		std::string getServerName() const;
-		std::string getUserName() const;
-		std::string getPassword() const;
-		User*		getUserByNick(const std::string& nick);
-		Channel*	getChannel(std::string channelName);
+	std::string			server_name_;
+	std::string			user_name_;
+	std::string 		password_;
 
-		// SETTERS
-		void		setSocket();
-		Channel*	setChannel(std::string channelName, User* channelOperator);
+	struct sockaddr_in	server_addr_;
+	std::vector<pollfd>	fds_;
+	// pollfd => a struct to request poll() to observe several sockets; array to monitor events on server and client sockets
+	//           Members: int fd, short events, short revents
+	pollfd				user_poll_[MAX_CLIENTS];
+	UserMap				users_;
+	ChannelMap			channels_;
 
-		// METHODS
-		void		run();
-		void		newClient(void);
-		void		clientRequest(int i);
-		void		removeUser(int i);
-		void		removeUser(User &user);
-		void		removeChannel(std::string channelName);
+public:
+	Server();
+	Server(char **argv);
+	~Server();
 
-		class RunTimeError: public std::exception {
-			private:
-				std::string msg;
-			public:
-				RunTimeError(const std::string &message) : msg(message) {}
-			virtual ~RunTimeError() throw() {}
-			virtual const char* what() const throw() {
-				return msg.c_str();
-			}
-		};
+	/* GETTERS */
+	std::string getServerName() const;
+	std::string getUserName() const;
+	std::string getPassword() const;
+	User*		getUserByNick(const std::string& nick);
+	Channel*	getChannel(std::string channel_name);
 
-	private:
-		int 				_port;
-		int					_serverFd;
-		int					_fdCount;
+	/* SETTERS */
+	void		setSocket();
+	Channel*	setChannel(std::string channel_name, User* channel_operator);
 
-		std::string			_serverName;
-		std::string			_userName;
-		std::string 		_password;
+	/* METHODS */
+	void		run();
+	void		newClient(void);
+	void		clientRequest(int i);
+	void		removeUser(int i);
+	void		removeUser(User &user);
+	void		removeChannel(std::string channel_name);
 
-		struct sockaddr_in	_serverAddr;
-		std::vector<pollfd>	_fds;
-		// pollfd => a struct to request poll() to observe several sockets; array to monitor events on server and client sockets
-		//           Members: int fd, short events, short revents
-		pollfd				_userPoll[MAX_CLIENTS];
-		userMap				_users;
-		channelMap			_channels;
+	class RunTimeError: public std::exception {
+		private:
+			std::string msg;
+		public:
+			RunTimeError(const std::string &message) : msg(message) {}
+		virtual ~RunTimeError() throw() {}
+		virtual const char* what() const throw() {
+			return msg.c_str();
+		}
+	};
 };
