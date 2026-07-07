@@ -8,7 +8,7 @@ User::User() : user_name_(""), nickname_(""),
 			   real_name_(""), host_name_(""),
 			   is_registered_(false), has_user_(false),
 			   has_nick_(false), pass_ok_(false) {
-	last_activity_ = time(NULL);
+	this->last_activity_ = time(NULL);
 }
 
 User::User(int user_fd) : fd_(user_fd),
@@ -16,7 +16,7 @@ User::User(int user_fd) : fd_(user_fd),
 						  real_name_(""), host_name_(""),
 						  is_registered_(false), has_user_(false),
 						  has_nick_(false), pass_ok_(false) {
-	last_activity_ = time(NULL);
+	this->last_activity_ = time(NULL);
 }
 
 
@@ -66,9 +66,9 @@ void User::setPassOK(bool flag) { this->pass_ok_ = flag; }
 
 /* METHODS */
 void User::reply(std::string msg) {
-	std::string fullMsg = msg + "\r\n";
+	std::string full_msg = msg + "\r\n";
 	// ssize_t send(A. socket_fd, B. buf_address, C. len_of_buf, D. flag);
-	send(fd_, fullMsg.c_str(), fullMsg.size(), 0);
+	send(fd_, full_msg.c_str(), full_msg.size(), 0);
 }
 
 void User::joinChannel(Channel* channel) {

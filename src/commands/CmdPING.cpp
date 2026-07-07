@@ -30,7 +30,7 @@ void CmdPing::execute(User& user, Server& server) {
 	/*
 	 * Grab the token sent by the client
 	 */
-	std::string received_token = _params[0];
+	std::string received_token = params_[0];
 
 	/*
 	 * Build the PONG response message

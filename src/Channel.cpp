@@ -7,12 +7,11 @@
 /* ======================== Orthodox Canonical Form ========================= */
 
 Channel::Channel(const std::string& channelName, User* channelOperator)
-	: _channelName(channelName), _channelPassword(""),
-	  _isInviteOnly(false), _isTopicRestricted(false),
-	  _hasKey(false), _memberLimit(0)
-{
-	this->_channelMembers[channelOperator->getNickname()] = channelOperator;
-	this->_channelOperators.insert(channelOperator->getNickname());
+	: channel_name_(channelName), channel_password_(""),
+	  is_invite_only_(false), is_topic_restricted_(false),
+	  has_key_(false), member_limit_(0) {
+	this->channel_members_[channelOperator->getNickname()] = channelOperator;
+	this->channel_operators_.insert(channelOperator->getNickname());
 	channelOperator->joinChannel(this);
 }
 
@@ -26,126 +25,199 @@ Channel& Channel::operator=(const Channel& src) {
 	     - `.`: Direct access to the members of object
 	*/
 	if (this != &src) {
-		this->_channelName = src._channelName;
-		this->_channelPassword = src._channelPassword;
-		this->_channelTopic = src._channelTopic;
-		this->_memberLimit = src._memberLimit;
-		this->_channelMembers = src._channelMembers;
-		this->_channelOperators = src._channelOperators;
-		this->_isInviteOnly = src._isInviteOnly;
-		this->_isTopicRestricted = src._isTopicRestricted;
-		this->_invitedUsers = src._invitedUsers;
-		this->_hasKey = src._hasKey;
+		this->channel_name_ = src.channel_name_;
+		this->channel_password_ = src.channel_password_;
+		this->channel_topic_ = src.channel_topic_;
+		this->member_limit_ = src.member_limit_;
+		this->channel_members_ = src.channel_members_;
+		this->channel_operators_ = src.channel_operators_;
+		this->is_invite_only_ = src.is_invite_only_;
+		this->is_topic_restricted_ = src.is_topic_restricted_;
+		this->invited_users_ = src.invited_users_;
+		this->has_key_ = src.has_key_;
 	}
 	return *this;
 }
 
 Channel::~Channel() {}
 
-/* ============================ MEMBER FUNCTIONS ============================ */
+/* GETTERS */
 
-/* ***GETTERS *** */
-// Returns the number of members in the channel
+// Return the num of members in the channel
 size_t Channel::getMemberCount() const {
-	return _channelMembers.size();
+	return this->channel_members_.size();
 }
 
-/* If the channel is on 'i', 't', 'k' or 'l' mode, returns `true`,
-   if not, returns `false`
-*/
+// If the channel has modes ('i', 't', 'k', 'l'), return true,
+// if not, return false
 bool Channel::hasMode(char mode) const {
+
+	// Switch-case is more efficient and readable than if-else for single-value conditions
 	switch(mode) {
-		case 'i': return _isInviteOnly;
-		case 't': return _isTopicRestricted;
-		case 'k': return !_channelPassword.empty();
-		case 'l': return _memberLimit > 0;
+		case 'i': return this->is_invite_only_;
+		case 't': return this->is_topic_restricted_;
+		case 'k': return !this->channel_password_.empty();
+		case 'l': return this->member_limit_ > 0;
 		default: return false;
 	}
 }
 
-std::string Channel::getChannelKey() const
-	{return _channelPassword;}
+std::string Channel::getChannelKey() const { return this->channel_password_; }
 
-size_t Channel::getMemberLimit() const
-	{return _memberLimit;}
+size_t Channel::getMemberLimit() const { return this->member_limit_; }
 
-bool Channel::isUserInChannel(std::string userNickname) const {
-	if (_channelMembers.find(userNickname) != _channelMembers.end())
+std::string Channel::getChannelName() const { return this->channel_name_; }
+
+size_t Channel::getUserCount() const { return this->channel_members_.size(); }
+
+std::string Channel::getChannelTopic() const { return this->channel_topic_; }
+
+const std::map<std::string, User*>& Channel::getMembers() const { return channel_members_; }
+
+bool Channel::isUserInChannel(std::string nickname) const {
+	if (this->channel_members_.find(nickname) != this->channel_members_.end())
 		return true;
 	return false;
 }
 
-bool Channel::isUserOperator(std::string userNickname) const {
-	if (_channelOperators.find(userNickname) != _channelOperators.end())
+bool Channel::isUserOperator(std::string nickname) const {
+	if (this->channel_operators_.find(nickname) != this->channel_operators_.end())
 		return true;
 	return false;
 }
 
-std::string Channel::getChannelName() {
-	return _channelName;
+bool Channel::isInvited(const std::string& nickname) const {
+	if (this->invited_users_.find(nickname) != this->invited_users_.end())
+		return true;
+	return false;
 }
 
-size_t Channel::getUserCount() const {
-	return _channelMembers.size();
+User* Channel::getUserByNick(std::string nickname) {
+	std::map<std::string, User*>::iterator it = channel_members_.find(nickname);
+	if (it == this->channel_members_.end())
+		return NULL;
+	return it->second;
 }
 
-std::string Channel::getChannelTopic() const {
-	return this->_channelTopic;
+/* SETTERS */
+void Channel::setChannelTopic(std::string topic) { this->channel_topic_ = topic; }
+
+// Modes:
+//       1. 'i': need invitation
+//       2. 'k': need password
+///      3. 'l': num of user limited
+//       4. 'o': give operator privilege
+//       5. 't': topic limited
+
+// Operators: '+' (add), '-' (remove)
+// Following Values: 
+//       1. Password (With k)
+//       2. Number of user (With l)
+//       3. A nickname (With o)
+//       4. A string (with t)
+int Channel::setMode(char mode, char op, std::string value, User* setter) {
+	if (this->channel_operators_.find(setter->getNickname()) == channel_operators_.end())
+		return 482;
+
+	bool is_plus = (op == '+');
+
+	try {
+		switch (mode) {
+			case 'i': //
+				this->is_invite_only_ = is_plus;
+				break;
+			
+			case 't':
+				this->is_topic_restricted_ = is_plus;
+				break;
+
+			case 'k': // need password
+				if (is_plus) {
+					if (value.empty()) throw IRCException(461, "ERR_NEEDMOREPARAMS");
+					this->channel_password_ = value;
+					this->has_key_ = true;
+				} else { // => "-k"
+					this->channel_password_ = "";
+					this->has_key_ = false;
+				}
+				break;
+
+			case 'l': // Number of user limited
+				if (is_plus) {
+					if (value.empty()) throw IRCException(461, "ERR_NEEDMOREPARAMS");
+
+					int limit;
+					if (!stringToInt(value, limit))
+						throw IRCException(472, "ERR_UNKNOWNMORE");
+					this->member_limit_ = (limit < 0) ? 0 : limit;
+				} else { // => "-l"
+					this->member_limit_ = 0;
+				}
+				break;
+
+			case 'o': {
+				if (value.empty()) throw IRCException(461, "ERR_NEEDMOREPARAMS");
+				User* target = getUserByNick(value);
+				if (!target) throw IRCException(401, "ERR_NOSUCHNICK");
+
+				return is_plus ? this->addOperator(target) : this->removeOperator(target);
+			}
+			
+			default:
+				throw IRCException(472, "ERR_UNKNOWNMODE");
+		}
+	} catch (const IRCException& e) {
+		return e.getErrorCode();
+	}
+	return 0;
 }
 
-const std::map<std::string, User*>& Channel::getMembers() const {
-	return _channelMembers;
-}
+/* METHODS */
 
-void Channel::setChannelTopic(std::string topic) {
-	this->_channelTopic = topic;
-}
-
-/* ***Logic Functions*** */
 // RFC standards error code used:
 // https://www.rfc-editor.org/rfc/rfc2812.html
 // 475(ERR_BADCHANNELKEY): Wrong password for the channel
 // 471(ERR_CHANNELISFULL): User limit reached
 // 0: Success to join a user
 int Channel::addUser(User* user, std::string password) {
-	// 1. if user already exists in the channel
-	if (_channelMembers.find(user->getNickname()) != _channelMembers.end())
+	// User already exists in the channel
+	if (this->channel_members_.find(user->getNickname()) != this->channel_members_.end())
 		return 0; // Success
 
-	// 2. if invite-only mode enabled (+i)
-	if (this->_isInviteOnly) {
-		if (_invitedUsers.find(user->getNickname()) == _invitedUsers.end())
+	// Invite-only mode enabled (+i)
+	if (this->is_invite_only_) {
+		if (this->invited_users_.find(user->getNickname()) == this->invited_users_.end())
 			return 473;
 	}
 
-	// 3. password validation (only when +k[password needed] mode is enabled)
-	if (this->_hasKey && this->_channelPassword != password)
+	// Password validation (only when +k is enabled)
+	if (this->has_key_ && this->channel_password_ != password)
 		return 475; // ERR_BADCHANNELKEY
 
-	// 4. user limit check (only when +l[num of user limited] mode is enabled)
-	// if _memberLimit is 0, unlimited user entry allowed
-	if (this->_memberLimit > 0 && this->_channelMembers.size() >= (size_t)_memberLimit)
+	// User limit check (only when +l is enabled)
+	// if member_limit_ is 0, unlimited user entry allowed
+	if (this->member_limit_ > 0 && this->channel_members_.size() >= (size_t)this->member_limit_)
 		return 471;
 
-	// 4. User entry approval and removes user from the invited users
-	_channelMembers[user->getNickname()] = user;
-	_invitedUsers.erase(user->getNickname());
+	// User entry approval and removes user from the invited user list
+	this->channel_members_[user->getNickname()] = user;
+	this->invited_users_.erase(user->getNickname());
 	user->joinChannel(this);
 
 	return 0; // Success
 }
 
 int Channel::removeUser(User* user) {
-	// 1. user exists in the channel
 	std::string nickname = user->getNickname();
-	if (_channelMembers.find(nickname) == _channelMembers.end())
+	// User doesn't exist in the channel
+	if (this->channel_members_.find(nickname) == this->channel_members_.end())
 		return 442; // ERR_NOTONCHANNEL
 
-	// 2. Deletes user in the channel members
-	_channelMembers.erase(nickname);
+	// Delete user in the channel members
+	this->channel_members_.erase(nickname);
 
-	// 3. Deletes user in the channel operaters
-	_channelOperators.erase(nickname);
+	// Delete user in the channel operaters
+	this->channel_operators_.erase(nickname);
 	user->leaveChannel(this);
 
 	return 0;
@@ -156,15 +228,15 @@ int Channel::addOperator(User* user) {
 
 	std::string nickname = user->getNickname();
 
-	// 1. if user is in the channel members.
-	if (_channelMembers.find(nickname) == _channelMembers.end())
+	// User is not in the channel members.
+	if (this->channel_members_.find(nickname) == this->channel_members_.end())
 		return 441; // ERR_USERNOTINCHANNEL
 
-	// 2. if user is already an operator
-	if (_channelOperators.find(nickname) != _channelOperators.end())
+	// User is already an operator
+	if (this->channel_operators_.find(nickname) != this->channel_operators_.end())
 		return 0;
 	
-	_channelOperators.insert(nickname);
+	this->channel_operators_.insert(nickname);
 	return 0;
 }
 
@@ -172,154 +244,73 @@ int Channel::removeOperator(User* user) {
 	if (!user) return -1;
 	std::string nickname = user->getNickname();
 
-	// 1. if the user is a channel member
-	if (_channelMembers.find(nickname) == _channelMembers.end()) {
+	// User is not in the channel
+	if (this->channel_members_.find(nickname) == this->channel_members_.end())
 		return 441; // ERR_USERNOTINCHANNEL
-	}
 
-	// 2. if the user is an operator
-	if (_channelOperators.find(nickname) == _channelOperators.end())
+	// User is not an operator
+	if (this->channel_operators_.find(nickname) == this->channel_operators_.end())
 		return 0;
 
-	// 3. remove the user from the operator list
-	_channelOperators.erase(nickname);
+	// Remove the user from the operator list
+	this->channel_operators_.erase(nickname);
 
 	return 0;
 }
 
 void Channel::addInvite(const std::string& nickname) {
-	_invitedUsers.insert(nickname);
+	this->invited_users_.insert(nickname);
 
-	std::cout << "[Channel] " << _channelName << ": " << nickname << " has been invited." << std::endl;
-}
-
-bool Channel::isInvited(const std::string& nickname) const {
-	if (_invitedUsers.find(nickname) != _invitedUsers.end())
-		return true;
-	return false;
+	std::cout << "[Channel] " << channel_name_ << ": " << nickname << " has been invited." << std::endl;
 }
 
 void Channel::removeInvite(const std::string& nickname) {
-	_invitedUsers.erase(nickname);
+	this->invited_users_.erase(nickname);
 
-	std::cout << "[Channel] " << _channelName << ": " << nickname << " removed from invite list." << std::endl;
+	std::cout << "[Channel] " << channel_name_ << ": " << nickname << " removed from invite list." << std::endl;
 }
 
-void Channel::updateUserNick(const std::string& oldNick, const std::string& newNick) {
-	std::map<std::string, User*>::iterator it = _channelMembers.find(oldNick);
-	if (it != _channelMembers.end()) {
+void Channel::updateUserNick(const std::string& old_pick, const std::string& new_nick) {
+	std::map<std::string, User*>::iterator it = this->channel_members_.find(old_pick);
+	if (it != this->channel_members_.end()) {
 		User* user = it->second;
-		_channelMembers.erase(it);
-		_channelMembers[newNick] = user;
+		this->channel_members_.erase(it);
+		this->channel_members_[new_nick] = user;
 	}
 
-	std::set<std::string>::iterator opIt = _channelOperators.find(oldNick);
-	if (opIt != _channelOperators.end()) {
-		_channelOperators.erase(opIt);
-		_channelOperators.insert(newNick);
+	std::set<std::string>::iterator op_it = this->channel_operators_.find(old_pick);
+	if (op_it != this->channel_operators_.end()) {
+		this->channel_operators_.erase(op_it);
+		this->channel_operators_.insert(new_nick);
 	}
-
-	
 }
 
-/* Except the sender(exceptUser), all members receive the message*/
-void Channel::broadcast(std::string msg, User* exceptUser) {
+// Send the message to all members except the sender (except_user)
+void Channel::broadcast(std::string msg, User* except_user) {
 	if (msg.empty()) return;
-	// it's safe to add the IRC standard newline character sequence("\r\n"),
-	// if it's not at the end of the message.
-	// '\r'(Carriage Return): Sends the cursor to the beginning of the current line
+
+	// Add the IRC standard newline character sequence("\r\n"),
 	if (msg.find("\r\n") == std::string::npos)
 		msg += "\r\n";
 
 	std::map<std::string, User*>::iterator it;
-	for (it = _channelMembers.begin(); it != _channelMembers.end(); ++it) {
-		User* targetUser = it->second;
+	for (it = this->channel_members_.begin(); it != this->channel_members_.end(); ++it) {
+		User* target_user = it->second;
 
-		// If user to exclude is specified and match the current target, skip.
-		if (exceptUser != NULL && targetUser == exceptUser)
+		// If the current target is except user, skip.
+		if (except_user != NULL && target_user == except_user)
 			continue;
 
-		if (send(targetUser->getFd(), msg.c_str(), msg.size(), 0) == -1)
-			std::cerr << "Broadcast send failed to: " << targetUser->getNickname() << std::endl;
+		if (send(target_user->getFd(), msg.c_str(), msg.size(), 0) == -1)
+			std::cerr << "Broadcast send failed to: " << target_user->getNickname() << std::endl;
 	}
 }
 
-// ============================= Helper functions for setMode =============================
-User* Channel::getUserByNick(std::string nickname) {
-	std::map<std::string, User*>::iterator it = _channelMembers.find(nickname);
-	if (it == _channelMembers.end())
-		return NULL;
-	return it->second;
-}
-
+// Strict string-to-integer conversion (unlike atoi, it rejects invalid input like "42abc")
 bool Channel::stringToInt(const std::string& str, int& result) {
 	std::stringstream ss(str);
 
-	if (!(ss >> result) || !ss.eof()) {
+	if (!(ss >> result) || !ss.eof())
 		return false;
-	}
 	return true;
 }
-
-// mode: 'k': password needed, 'l': user limit, 'o': operator setup, 't': topic limit
-// op: '+'(add/enable), '-'(remove/disable)
-// value: password / number of user limit / a specific nickname
-int Channel::setMode(char mode, char op, std::string value, User* setter) {
-	if (_channelOperators.find(setter->getNickname()) == _channelOperators.end())
-		return 482;
-	bool isPlus = (op == '+');
-
-	try {
-		switch (mode) {
-			case 'i':
-				_isInviteOnly = isPlus;
-				break;
-			
-			case 't':
-				_isTopicRestricted = isPlus;
-				break;
-
-			case 'k': // Key(password)
-				if (isPlus) {
-					if (value.empty()) throw IRCException(461, "ERR_NEEDMOREPARAMS");
-					_channelPassword = value;
-					_hasKey = true;
-				} else {
-					_channelPassword = "";
-					_hasKey = false;
-				}
-				break;
-
-			case 'l': // Limit (user limit)
-				if (isPlus) {
-					if (value.empty()) throw IRCException(461, "ERR_NEEDMOREPARAMS");
-
-					int limit;
-					if (!stringToInt(value, limit)) {
-						throw IRCException(472, "ERR_UNKNOWNMORE");
-					}
-					_memberLimit = (limit < 0) ? 0 : limit;
-				} else {
-					_memberLimit = 0;
-				}
-				break;
-			
-			case 'o':
-			{
-				if (value.empty()) throw IRCException(461, "ERR_NEEDMOREPARAMS");
-				User* target = getUserByNick(value);
-				if (!target) throw IRCException(401, "ERR_NOSUCHNICK");
-
-				return isPlus ? this->addOperator(target) : this->removeOperator(target);
-			}
-			
-			default:
-				throw IRCException(472, "ERR_UNKNOWNMODE");
-		}
-	} catch (const IRCException& e) {
-		return e.getErrorCode();
-	}
-		return 0;
-}
-
-

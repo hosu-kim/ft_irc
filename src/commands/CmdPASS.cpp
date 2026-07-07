@@ -38,7 +38,7 @@ void CmdPass::execute(User &user, Server &server) {
 	/*
 	 * 3. Validate the password
 	 */
-	std::string given_password = this->_params[0];
+	std::string given_password = this->params_[0];
 	if (given_password == server.getPassword()) {
 		user.setPassOK(true);
 	} else {

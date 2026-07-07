@@ -7,92 +7,82 @@
 class User;
 
 class Channel {
-	private:
-		std::string _channelName;
-		std::string _channelPassword;
-		std::string _channelTopic;
+private:
+	std::string channel_name_;
+	std::string channel_password_;
+	std::string channel_topic_;
 
-		/* I could use std::vector also, but when we search and kick a specific user,
-		   it's not effetive than std::map
-		     1. we have to search through users from beginning to end. that causes slow operation...
-		     2. To find duplicate users, every time we have to iterate through them 😢 */
-		//       vv: nickname vv: user instance
-		std::map<std::string, User*> _channelMembers;
-		/* Key features of std::set
-		   1. ***Duplicates not allowed***: even if the same value is entered twice,
-		                                    only one is stored.
-		   2. Sorts elements in ascending order
-		*/
-		std::set<std::string> _channelOperators;
-		// Mode flags
-		bool _isInviteOnly; // 'i' mode
-		bool _isTopicRestricted; // 't' mode
-		bool _hasKey; // 'k' mode
-		// if _memberLimit is 0, unlimited user entry allowed
-		size_t _memberLimit; // 'l' mode
-		std::set<std::string> _invitedUsers;
-		Channel();
+	std::map<std::string, User*> channel_members_;
+	std::set<std::string> channel_operators_;
+	std::set<std::string> invited_users_;
+
+	// Mode flags
+	bool is_invite_only_; // 'i' mode
+	bool is_topic_restricted_; // 't' mode
+	bool has_key_; // 'k' mode
+	// member_limit_ = 0 means unlimited user entry allowed
+	size_t member_limit_; // 'l' mode
+
+	Channel();
+
+public:
+	/* Orthodox Canonical Form */
+	Channel(const std::string& channel_name, User* channel_operator);
+	Channel(const Channel& src);
+	Channel& operator=(const Channel& src);
+	~Channel();
+
+	/* GETTERS */
+	bool hasMode(char mode) const;
+	size_t getMemberCount() const;
+	std::string getChannelKey() const;
+	size_t getMemberLimit() const;
+	bool isUserInChannel(std::string userNickname) const;
+	bool isUserOperator(std::string userNickname) const;
+	std::string getChannelName() const;
+	size_t getUserCount() const;
+	std::string getChannelTopic() const;
+	const std::map<std::string, User*>& getMembers() const;
+	User* getUserByNick(std::string nickname);
+
+	/* SETTERS */
+	void setChannelTopic(std::string topic);
+	int setMode(char mode, char op, std::string value, User* setter);
+
+
+	/* METHODS */
+	int addUser(User* user, std::string password);
+	int removeUser(User* user);
+	int addOperator(User* user);
+	int removeOperator(User* user);
+	void addInvite(const std::string& nickname);
+	bool isInvited(const std::string& nickname) const;
+	void removeInvite(const std::string& nickname);
+	void updateUserNick(const std::string& old_nick, const std::string& new_nick);
+
+	/* Except the sender(exceptUser), all members receive the message*/
+	void broadcast(std::string message, User* except_user);
+
+	// mode change member functions
+	bool stringToInt(const std::string& str, int& result);
+
+	class IRCException : public std::exception {
+	private:
+		int error_code_;
+		std::string message_;
 
 	public:
-		/* Orthodox Canonical Form */
-		// The constructor sets up _channelName and initializes member variables.
-		Channel(const std::string& channelName, User* channelOperator);
-		Channel(const Channel& src);
-		Channel& operator=(const Channel& src);
-		~Channel();
-		//======================================================================
+		IRCException(int code, const std::string& msg)
+		: error_code_(code), message_(msg) {}
 
-		// GETTERS
-		bool hasMode(char mode) const;
-		size_t getMemberCount() const;
-		std::string getChannelKey() const;
-		size_t getMemberLimit() const;
-		bool isUserInChannel(std::string userNickname) const;
-		bool isUserOperator(std::string userNickname) const;
-		User* getUserByNick(std::string nickname);
-		std::string getChannelName();
-		size_t getUserCount() const;
-		std::string getChannelTopic() const;
-		const std::map<std::string, User*>& getMembers() const;
+		virtual ~IRCException() throw() {}
 
-		// SETTERS
-		void setChannelTopic(std::string topic);
+		virtual const char* what() const throw() {
+			return message_.c_str();
+		}
 
-
-		// LOGIC FUNCTIONS
-		int addUser(User* user, std::string password);
-		int removeUser(User* user);
-		int addOperator(User* user);
-		int removeOperator(User* user);
-		void addInvite(const std::string& nickname);
-		bool isInvited(const std::string& nickname) const;
-		void removeInvite(const std::string& nickname);
-		void updateUserNick(const std::string& oldNick, const std::string& newNick);
-
-		/* Except the sender(exceptUser), all members receive the message*/
-		void broadcast(std::string message, User* exceptUser);
-
-		// mode change member functions
-		bool stringToInt(const std::string& str, int& result);
-		int setMode(char mode, char op, std::string value, User* setter);
-
-		class IRCException : public std::exception {
-			private:
-				int _errorCode;
-				std::string _message;
-
-			public:
-				IRCException(int code, const std::string& msg)
-				: _errorCode(code), _message(msg) {}
-
-				virtual ~IRCException() throw() {}
-
-				virtual const char* what() const throw() {
-					return _message.c_str();
-				}
-
-				int getErrorCode() const {
-					return _errorCode;
-				}
- 		};
+		int getErrorCode() const {
+			return error_code_;
+		}
+	};
 };

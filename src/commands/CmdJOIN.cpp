@@ -3,6 +3,7 @@
  * Description: Used when a user wants to join a specific channel.
  *              If the channel does not exist, it will be created automatically.
  * 
+ * Params: 0.   1.        2.
  * Syntax: JOIN <channel> [<password>]
  * 
  * Examples:
@@ -12,91 +13,88 @@
 
 #include "CmdJOIN.hpp"
 
-
 void CmdJoin::execute(User &user, Server &server) {
 	// "*" used as a temporary placeholder if the user hasn't set a nickname yet.
-	// This prevents formatting errors in IRC numeric replies. (=> std::string msg = ...)
+	// Prevent formatting errors in IRC numeric replies. (=> std::string msg = ...)
 	std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
 
-	/*
-	 * 1. Check the number of parameters
-	 */
+	// Check the number of parameters => one or tow
 	if (getParamCount() < 1) {
 		// Sends ERR_NEEDMOREPARAMS (461)
-		std::string errMsg = ":" + server.getServerName() + " 461 " + nick
-						  + " JOIN :Not enough parameters";
-		user.reply(errMsg);
+		std::string err_msg = ":" + server.getServerName() + " 461 " + nick + " JOIN :Not enough parameters";
+		user.reply(err_msg);
 		return;
 	}
 	
-	std::string channelName = getParam(0);
-	std::string key = (getParamCount() >= 2) ? getParam(1) : "";
+	std::string channel_name = this->getParam(0);
+	std::string passowrd = (this->getParamCount() >= 2) ? this->getParam(1) : "";
 
-	/* 
-	 * Find a channel with the given channel userName in the server
-	 */
-	Channel* channel = server.getChannel(channelName);
 
-	// Case 1: the channel doesn't exist in the server => make one
+	Channel* channel = server.getChannel(channel_name);
+
+	// The channel doesn't exist in the server => Make one
 	if (channel == NULL) {
-		
-		// the first user in the channel becomes an operator,
-		// it should be implemented in createChannel for now idk
-		channel = server.setChannel(channelName, &user);
+		channel = server.setChannel(channel_name, &user);
 
-	// Case 2: the channel already exists in the server: checks modes, +k and +l
+	// The channel already exists in the server => Checks modes, +k and +l
 	} else {
-		// A. Invite-only Mode Check (Mode +i)
+		// Check invite-only mode (+i)
 		if (channel->hasMode('i') && !channel->isInvited(user.getNickname())) {
-			user.reply(":" + server.getServerName() + " 473 " + nick + " " + channelName + " :Cannot join channel (+i)");
+			std::string err_msg = ":" + server.getServerName() + " 473 " + nick + " " + channel_name + " :Cannot join channel (+i)";
+			user.reply(err_msg);
 			return; // 473 => ERR_INVITEONLYCHAN
 		}
-		// B. Password Check (Mode +k)
-		if (channel->hasMode('k') && channel->getChannelKey() != key) {
-			user.reply(":" + server.getServerName() + " 475 " + nick + " " + channelName + " :Cannot join channel (+k)");
+		// Check password (+k)
+		if (channel->hasMode('k') && channel->getChannelKey() != passowrd) {
+			std::string err_msg = ":" + server.getServerName() + " 475 " + nick + " " + channel_name + " :Cannot join channel (+k)";
+			user.reply(err_msg);
 			return; // 475 => ERR_BADCHANNELKEY
 		}
-		// C. Memeber Limit Check (Mode +l)
+		// Check num of users (+l)
 		if (channel->hasMode('l') && channel->getMemberCount() >= channel->getMemberLimit()) {
-			user.reply(":" + server.getServerName() + " 471 " + nick + " " + channelName + " :Cannot join channel (+l)");
+			std::string err_msg = ":" + server.getServerName() + " 471 " + nick + " " + channel_name + " :Cannot join channel (+l)";
+			user.reply(err_msg);
 			return; // 471 => ERR_CHANNELISFULL
 		}
-		// D. Add the user
-		channel->addUser(&user, key);
+
+		channel->addUser(&user, passowrd);
 
 		if(channel->isInvited(user.getNickname()))
 			channel->removeInvite(user.getNickname());
 	}
-	// (3) Sends a success message to every channel member
-	// Format: "":nickName!userName@hostName Join : #channelName"
-	std::string joinMsg = ":" + nick + "!" + user.getUserName() + "@" + user.getHostName() + " JOIN :" + channelName;
-	channel->broadcast(joinMsg, NULL);
+
+	// Send a success message to all channel members
+	// Format: "":nickname!user_name@host_name Join : #channel_name"
+	std::string join_msg = ":" + nick + "!" + user.getUserName() + "@" + user.getHostName() + " JOIN :" + channel_name;
+	channel->broadcast(join_msg, NULL);
 
 	std::string topic = channel->getChannelTopic();
+
+	// No topic is set in the channel
 	if (topic.empty()) {
-		std::string errMsg = ":" + server.getServerName() + " 331 " + nick + " " + channelName + " :No topic is set";
-		user.reply(errMsg);
+		std::string err_msg = ":" + server.getServerName() + " 331 " + nick + " " + channel_name + " :No topic is set";
+		user.reply(err_msg);
+	// Send the joined user the channel topic
 	} else {
-		std::string errMsg = ":" + server.getServerName() + " 332 " + nick + " " + channelName + " :" + channel->getChannelTopic();
-		user.reply(errMsg);
+		std::string topic_msg = ":" + server.getServerName() + " 332 " + nick + " " + channel_name + " :" + channel->getChannelTopic();
+		user.reply(topic_msg);
 	}
-	
-	std::string symbol = "=";
-	std::string listMsg = ":" + server.getServerName() + " 353 " + nick + " " + symbol + " " + channelName + " :";
+
+	std::string user_list_msg = ":" + server.getServerName() + " 353 " + nick + " = " + channel_name + " :";
 
 	// Iterate channel members to build nickname list
 	const std::map<std::string, User*>& members = channel->getMembers();
+
 	std::map<std::string, User*>::const_iterator it;
 	for (it = members.begin(); it != members.end(); ++it) {
-		if (channel->isUserOperator(it->first)) {
-			listMsg += "@";
-		}
-		listMsg += it->first + " ";
+		if (channel->isUserOperator(it->first))
+			user_list_msg += "@";
+
+		user_list_msg += it->first + " ";
 	}
 	// Send RPL_NAMREPLY (353)
-	user.reply(listMsg);
+	user.reply(user_list_msg);
 
-	std::string errMsg = ":" + server.getServerName() + " 366 " + nick + " " + channelName + " :End of name list";
-	user.reply(errMsg);
-
+	std::string end_msg = ":" + server.getServerName() + " 366 " + nick + " " + channel_name + " :End of name list";
+	user.reply(end_msg);
 }

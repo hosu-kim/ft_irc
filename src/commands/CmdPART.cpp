@@ -40,13 +40,13 @@ void CmdPart::execute(User &user, Server &server) {
 	if (this->getParamCount() > 1) {
 		// join remaining params into message, and strip leading ':' if present
 		// e.g., params[1] might be ":Goodbye" (1 token) or multiple tokens => Goobye everyone (2 tokens)
-		partReason = combine_params_with_spaces(1);
+		partReason = combineParamsToOneStr(1);
 	}
 
 	/*
 	 * 3. Split channels by comma and iterate
 	 */
-	std::vector<std::string> channelNames = split_str(',');
+	std::vector<std::string> channelNames = splitStr(',');
 	for (size_t i = 0; i < channelNames.size(); ++i) {
 		std::string &channelName = channelNames[i];
 

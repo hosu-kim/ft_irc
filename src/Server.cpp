@@ -41,7 +41,8 @@ Server::~Server() {
 	std::cout << "Server shutting down..." << std::endl;
 
 	// Free dynamically allocated channels to prevent memory leaks (=heap allocation => Channel* newChan = new...)
-	for (std::map<std::string, Channel*>::iterator it = channels_.begin(); it != channels_.end(); ++it)
+	std::map<std::string, Channel*>::iterator it;
+	for (it = channels_.begin(); it != channels_.end(); ++it)
 		delete it->second;
 
 	for (int i = 0; i < fd_count_; ++i)
@@ -56,7 +57,8 @@ std::string Server::getUserName() const { return this->user_name_; }
 std::string Server::getPassword() const { return this->password_; }
 
 User* Server::getUserByNick(const std::string& nick) {
-	for (std::map<int, User>::iterator it = users_.begin(); it != users_.end(); ++it) {
+	std::map<int, User>::iterator it;
+	for (it = users_.begin(); it != users_.end(); ++it) {
 		if (it->second.getNickname() == nick)
 			return &(it->second);
 	}
@@ -65,8 +67,8 @@ User* Server::getUserByNick(const std::string& nick) {
 
 Channel* Server::getChannel(std::string channel_name) {
 	// typedef std::map<std::string, Channel*>	ChannelMap;
-	ChannelMap::iterator it = channels_.find(channel_name);
-	if (it != channels_.end())
+	ChannelMap::iterator it = this->channels_.find(channel_name);
+	if (it != this->channels_.end())
 		return it->second;
 	return NULL;
 }
@@ -78,8 +80,8 @@ void Server::setSocket() {
 	// A. AF_INET: IPv4 address family
 	// B. SOCK_STREAM: Connection-oriented TCP protocol
 	// C. 0: Use default protocol for the domain and type
-	server_fd_ = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_fd_ < 0)
+	this->server_fd_ = socket(AF_INET, SOCK_STREAM, 0);
+	if (this->server_fd_ < 0)
 		throw Server::RunTimeError("socket() failed.");
 
 	int opt = 1;
@@ -88,43 +90,43 @@ void Server::setSocket() {
 	// C. SO_REUSEADDR: Allow immediate port reuse to prevent TIME_WAIT binding errors
 	// - TIME_WAIT? When the server exits or crashes, the OS temporarily locks
 	//              the port in a TIME_WAIT state (usually for 1-2 minutes) for safety
-	if (setsockopt(server_fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+	if (setsockopt(this->server_fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
 		throw Server::RunTimeError("Failed to set option (SO_REUSEADDR) on socket.");
 	
 	// fcntl() => File Control; Set the socket to non-blocking mode
 	// - F_SETFL: Set fiile status flags
 	// - O_NONBLOCK: Enable non-blocking I/O
 	// - Non-blocking? Makes socket calls (like accept/recv) return immediately without waiting
-	if (fcntl(server_fd_, F_SETFL, O_NONBLOCK) == -1)
+	if (fcntl(this->server_fd_, F_SETFL, O_NONBLOCK) == -1)
 		throw Server::RunTimeError("fcntl() failed.");
 
-	memset(&server_addr_, 0, sizeof(server_addr_));
+	memset(&this->server_addr_, 0, sizeof(this->server_addr_));
 	// sin_: Sockaddr INternet
-	server_addr_.sin_family = AF_INET; // IP4v
-	server_addr_.sin_addr.s_addr = INADDR_ANY; // Allows every connection from any IP address
-	server_addr_.sin_port = htons(port_); // Convert port number to network byte order
+	this->server_addr_.sin_family = AF_INET; // IP4v
+	this->server_addr_.sin_addr.s_addr = INADDR_ANY; // Allows every connection from any IP address
+	this->server_addr_.sin_port = htons(port_); // Convert port number to network byte order
 
 	// Bind the socket to the server address
-	if (bind(server_fd_, (struct sockaddr *)&server_addr_, sizeof(server_addr_)) == -1)
+	if (bind(this->server_fd_, (struct sockaddr *)&this->server_addr_, sizeof(this->server_addr_)) == -1)
 		throw Server::RunTimeError("Failed to bind socket.");
 
 	// Start listening for incoming connections with the maximum backlog queue
 	if (listen(server_fd_, SOMAXCONN) < 0)
 		throw Server::RunTimeError("listen() failed.");
 
-	user_poll_[0].fd = server_fd_;
-	user_poll_[0].events = POLLIN; // Monitor for incoming connections
-	user_poll_[0].revents = 0;
-	fd_count_ = 1;
+	this->user_poll_[0].fd = this->server_fd_;
+	this->user_poll_[0].events = POLLIN; // Monitor for incoming connections
+	this->user_poll_[0].revents = 0;
+	this->fd_count_ = 1;
 	std::cout << "setSocket() finished..." << std::endl;
 }
 
 Channel* Server::setChannel(std::string channel_name, User* channel_operator) {
-	Channel* newChannel = new Channel(channel_name, channel_operator);
-	channels_[channel_name] = newChannel;
+	Channel* new_channel = new Channel(channel_name, channel_operator);
+	this->channels_[channel_name] = new_channel;
 
 	std::cout << "[Server] New channel created: " << channel_name << " by " << channel_operator->getNickname() << std::endl;
-	return newChannel;
+	return new_channel;
 }
 
 /* METHODS */
@@ -135,7 +137,7 @@ void Server::newClient(void)
 	socklen_t addr_len = sizeof(user_addr);
 
 	// accept(A. listening_socket, B. connect, C. len_of_connect)
-	user_fd = accept(server_fd_, (sockaddr *)&user_addr, &addr_len);
+	user_fd = accept(this->server_fd_, (sockaddr *)&user_addr, &addr_len);
 
 	if (user_fd < 0) {
 		if (errno == EWOULDBLOCK || errno == EAGAIN)
@@ -144,14 +146,14 @@ void Server::newClient(void)
 			throw Server::RunTimeError("accept() failed.");
 	}
 
-	if (fd_count_ >= MAX_CLIENTS) {
+	if (this->fd_count_ >= MAX_CLIENTS) {
 		close(user_fd);
 		return;
 	} else {
 		fcntl(user_fd, F_SETFL, O_NONBLOCK);
-		this->user_poll_[fd_count_].fd = user_fd;
-		this->user_poll_[fd_count_].events = POLLIN;
-		this->user_poll_[fd_count_].revents = 0;
+		this->user_poll_[this->fd_count_].fd = user_fd;
+		this->user_poll_[this->fd_count_].events = POLLIN;
+		this->user_poll_[this->fd_count_].revents = 0;
 		this->fd_count_++;
 		this->users_[user_fd] = User(user_fd);
 		this->users_[user_fd].setHostmask(inet_ntoa(user_addr.sin_addr));
@@ -162,15 +164,15 @@ void Server::newClient(void)
 void Server::clientRequest(int i) {
 	char buffer[1024];
 	// recv(): "receive"; reads data sent by the client form a connected socket.
-	int bytes_read = recv(user_poll_[i].fd, buffer, sizeof(buffer), 0);
-	int user_fd = user_poll_[i].fd;
+	int bytes_read = recv(this->user_poll_[i].fd, buffer, sizeof(buffer), 0);
+	int user_fd = this->user_poll_[i].fd;
 
 	if (bytes_read > 0) {
 		std::string message(buffer, bytes_read);
 
-		users_[user_fd].buffer_ += message;
+		this->users_[user_fd].buffer_ += message;
 
-		std::string &buf_ref = users_[user_fd].buffer_;
+		std::string &buf_ref = this->users_[user_fd].buffer_;
 
 		// Extract and process complete messages delimied by newline (\n), stripping carriage returns (\n)
 		while (true) {
@@ -200,14 +202,14 @@ void Server::clientRequest(int i) {
 
 			std::cout << "cmd = " << cmd_name << std::endl;
 
-			User &user = users_[user_fd];
+			User &user = this->users_[user_fd];
 			if (!user.isRegistered() &&
 				cmd_name != "PASS" && cmd_name != "NICK" &&
 				cmd_name != "USER" && cmd_name != "QUIT" &&
 				cmd_name != "PING" && cmd_name != "PONG") {
 				std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
-				std::string errMsg = ":" + this->getServerName() + " 451 " + nick + " :You have not registered";
-				users_[user_fd].reply(errMsg);
+				std::string err_msg = ":" + this->getServerName() + " 451 " + nick + " :You have not registered";
+				this->users_[user_fd].reply(err_msg);
 				continue;
 			}
 
@@ -222,8 +224,8 @@ void Server::clientRequest(int i) {
 				delete command;
 			} else {
 				std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
-				std::string errMsg = ":" + this->getServerName() + " 421 " + nick + " " + cmd_name + " :Unknown command";
-				user.reply(errMsg);
+				std::string err_msg = ":" + this->getServerName() + " 421 " + nick + " " + cmd_name + " :Unknown command";
+				user.reply(err_msg);
 			}
 
 			// Exit if the user has been removed via QUIT command
@@ -245,15 +247,16 @@ void Server::clientRequest(int i) {
 
 // Remove a user from the server using an its index
 void Server::removeUser(int i) {
-	int fd = user_poll_[i].fd;
-	UserMap::iterator it = users_.find(fd);
+	int fd = this->user_poll_[i].fd;
+	UserMap::iterator it = this->users_.find(fd);
 
-	if (it != users_.end()) {
+	if (it != this->users_.end()) {
 		User &user = it->second;
-		std::map<std::string, Channel*> joinedChannels = user.getJoinedChannels();
+		std::map<std::string, Channel*> joined_channels = user.getJoinedChannels();
 
 		// remove user from the joined channels
-		for (std::map<std::string, Channel*>::iterator chan_it = joinedChannels.begin(); chan_it != joinedChannels.end(); ++chan_it) {
+		std::map<std::string, Channel*>::iterator chan_it;
+		for (chan_it = joined_channels.begin(); chan_it != joined_channels.end(); ++chan_it) {
 			Channel* joined_Channel = chan_it->second;
 
 			joined_Channel->removeUser(&user);
@@ -265,27 +268,27 @@ void Server::removeUser(int i) {
 	}
 
 	close(fd);
-	users_.erase(fd);
+	this->users_.erase(fd);
 
 	// vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 	// If the user being removed is not the latest user, overwrite its slot with the latest user in user_poll_
-	if (i < (int)fd_count_ - 1)
-		user_poll_[i] = user_poll_[fd_count_ - 1];
+	if (i < (int)this->fd_count_ - 1)
+		this->user_poll_[i] = this->user_poll_[this->fd_count_ - 1];
 
 	// If the user being removed is the latest user, the last user socket is ignored by the code line below
-	fd_count_--;
+	this->fd_count_--;
 	// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	// => With this code, it doesn't need to shift the remaming elements one by one -> Server effectivity
 
-	std::cout << "[Server] User removed. Current count: " << fd_count_ << std::endl;
+	std::cout << "[Server] User removed. Current count: " << this->fd_count_ << std::endl;
 }
 
 // Remove a user from the server using a User object
 void Server::removeUser(User &user) {
 	int fd = user.getFd();
 
-	for (int i = 0; i < fd_count_; i++) {
-		if (user_poll_[i].fd == fd) {
+	for (int i = 0; i < this->fd_count_; i++) {
+		if (this->user_poll_[i].fd == fd) {
 			this->removeUser(i);
 			return;
 		}
@@ -294,10 +297,10 @@ void Server::removeUser(User &user) {
 
 // Remove a channel from the server using the channel name
 void	Server::removeChannel(std::string channel_name) {
-	ChannelMap::iterator it = channels_.find(channel_name);
-	if (it != channels_.end()) {
+	ChannelMap::iterator it = this->channels_.find(channel_name);
+	if (it != this->channels_.end()) {
 		delete it->second;
-		channels_.erase(it);
+		this->channels_.erase(it);
 	}
 }
 
@@ -310,19 +313,19 @@ void Server::run() {
 
 	while (g_server_run) {
 		// Block and wait for events on monitored sockets
-		if (poll(user_poll_, fd_count_, -1) < 0) {
+		if (poll(this->user_poll_, this->fd_count_, -1) < 0) {
 			// Resume poll if interrupted by a signal (EINTR)
 			if (errno == EINTR) // Prevent poll failure by Ctrl+C
 				continue;
 			throw Server::RunTimeError("Error: poll failed.");
 		}
 
-		for (int i = 0; i < fd_count_; i++) {
-			if (user_poll_[i].revents & POLLIN) {
-				if (user_poll_[i].fd == server_fd_) {
+		for (int i = 0; i < this->fd_count_; i++) {
+			if (this->user_poll_[i].revents & POLLIN) {
+				if (this->user_poll_[i].fd == this->server_fd_) {
 					newClient();
 				} else {
-					int count_before = fd_count_;
+					int count_before = this->fd_count_;
 					clientRequest(i);
 
 					// Decrement index to prevent skipping a slot if a user was removed
@@ -331,14 +334,14 @@ void Server::run() {
 						continue;
 					}
 				}
-			} else if (user_poll_[i].revents & (POLLHUP | POLLERR)) {
+			} else if (this->user_poll_[i].revents & (POLLHUP | POLLERR)) {
 				// Handle client disconnection or socket error events
 				removeUser(i);
 				i--;
 				continue;
 			}
 			// Clear event flags to prepare for the next poll iteration
-			user_poll_[i].revents = 0;
+			this->user_poll_[i].revents = 0;
 		}
 	}
 }

@@ -16,65 +16,34 @@
 
 #include "../User.hpp"
 #include "../Server.hpp"
-//#include "CmdFactory.hpp"
-// #include "CmdJOIN.hpp"
-
-// Parser logic:
-// DONE 1. Split by spaces
-//      2. If ":" appears:
-//            -> everything after = ONE param
-//      Example:
-//          Input: USER test 0 * :Real Name
-//          Output: ["USER", "test", "0", "*", "Real Name"]
-// Commands to handle:
-//      Priority:
-//          PASS, NICK, USER
-//      After:
-//          PRIVMSG
-//      Last:
-//          JOIN
-
-// Example: PRIVMSG #chan :hello world
 
 class Server;
 class User;
 class Channel;
 
-class ACmd
-{
-	protected:
-		// e.g., KICK #channel target_user
-		//       cmd: "NICK"
-		std::string					_cmd;
-		//       params: ["#channel", "target_user"]
-		std::vector<std::string>	_params;
-		ACmd();
-		// No implementation of the copy constructor and copy assignment constructor.
-		// they are not used in abstract classes.
+class ACmd {
+protected:
+	std::string cmd_;
+	std::vector<std::string> params_;
+	ACmd();
+	// No implementation of the copy constructor and copy assignment constructor
+	// not used in abstract classes.
 
-		// child class uses this parameterized constructor.
-		ACmd(std::string cmd, std::vector<std::string> params);
-		ACmd(const ACmd& other);
-		ACmd& operator=(const ACmd& ohter);
+	// Child classes uses only this parameterized constructor.
+	ACmd(std::string cmd, std::vector<std::string> params);
+	ACmd(const ACmd& other);
+	ACmd& operator=(const ACmd& ohter);
 
-	public:
-		virtual ~ACmd();
+public:
+	virtual ~ACmd();
 
-		// GETTTERS
-		const std::string& getParam(size_t index) const;
-		size_t getParamCount() const;
+	/* GETTTERS */
+	const std::string& getParam(size_t index) const;
+	size_t getParamCount() const;
 
-		// HELPERS
-		virtual std::string combine_params_with_spaces(std::size_t start) const;
-		virtual std::vector<std::string> split_str(char delimiter) const;
+	/* HELPERS */
+	virtual std::string combineParamsToOneStr(std::size_t start) const;
+	virtual std::vector<std::string> splitStr(char delimiter) const;
 
-
-		// Pure Virtual Function: Child classes implement this funciton themselves :)
-		virtual void execute(User &user, Server &server) = 0;
-
-		// => this function to the CmdFactory as well
-		// static std::vector<std::string> splitBySpaces(std::string str); // is static necessary?
-
-		// => Hosu: better to implement this function below in the CmdFactory class
-		//          because ACmd only represents the parent of each child cmd class
+	virtual void execute(User &user, Server &server) = 0;
 };

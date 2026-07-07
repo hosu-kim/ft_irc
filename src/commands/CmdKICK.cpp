@@ -3,6 +3,7 @@
  * Description: Used when a channel operator forcefully removes (=kicks)
  *              a user from a channel.
  * 
+ * Params: 0    1         2      3
  * Syntax: KICK <channel> <user> [<reason>]
  * 
  * Example: KICK #42prague bad_user :Don't spam!
@@ -12,66 +13,56 @@
 
 void CmdKick::execute(User &user, Server &server) {
 	// "*" used as a temporary placeholder if the user hasn't set a nickname yet.
-	// This prevents formatting errors in IRC numeric replies. (=> std::string msg = ...)
+	// Prevent formatting errors in IRC numeric replies. (=> std::string msg = ...)
 	std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
 
-	/* 
-	 * 1. Check parameter count
-	 * Syntax: KICK <channel> <target_user> [<reason>]
-	 */
+	// Check parameter count
 	if (getParamCount() < 2) {
-		std::string errMsg = ":" + server.getServerName() + " 461 " + nick + " KICK :Not enough parameters";
-		user.reply(errMsg);
+		std::string err_msg = ":" + server.getServerName() + " 461 " + nick + " KICK :Not enough parameters";
+		user.reply(err_msg);
 		return;
 	}
 
-	/* 
-	 * 2. Extract parameters for readability
-	 */
-	std::string channelName = this->_params[0];
-	std::string targetNick = this->_params[1];
-	std::string reason = (this->_params.size() > 2) ? this->combine_params_with_spaces(2) : "No reason given"; // Default reason
-	/* 
-	 * 3. Check if the channel exists in the Server
-	 */
-	Channel* channel = server.getChannel(channelName);
+	// Extract parameters
+	std::string channel_name = this->params_[0];
+	std::string nick_being_kicked = this->params_[1];
+	std::string reason = (this->params_.size() > 2) ? this->combineParamsToOneStr(2) : "No reason given"; // Default reason
+	
+	Channel* channel = server.getChannel(channel_name);
+
+	// The channel doesn't exist in the server
 	if (channel == NULL) {
-		std::string msg = ":" + server.getServerName() + " 403 " + nick + " " + channelName + " :No such channel";
-		user.reply(msg);
+		std::string err_msg = ":" + server.getServerName() + " 403 " + nick + " " + channel_name + " :No such channel";
+		user.reply(err_msg);
 		return;
 	}
 
-	/* 
-	 * 4. Check the privileges of the command sender (user)
-	 */
-	// IF 'user' is NOT in 'channel':
+
+	// Check the privileges of kicker
+
+	// User is NOT in the channel
 	if (!channel->isUserInChannel(user.getNickname())) {
-		std::string msg = ":" + server.getServerName() + " 442 " + nick + " " + channelName + " :You're not on that channel";
+		std::string msg = ":" + server.getServerName() + " 442 " + nick + " " + channel_name + " :You're not on the channel";
 		user.reply(msg);
 		return;
 	}
-	// IF 'user' is NOT an operator of 'channel':
+	// User is NOT an operator of the channel
 	if (!channel->isUserOperator(user.getNickname())) {
-		std::string msg = ":" + server.getServerName() + " 482 " + nick + " " + channelName + " :You're not channel operator";
-		user.reply(msg);
+		std::string err_msg = ":" + server.getServerName() + " 482 " + nick + " " + channel_name + " :You're not channel operator";
+		user.reply(err_msg);
 		return;
 	}
 
-	/* 
-	 * 5. Check if the target user is in the channel
-	 */
-	User* targetUser = channel->getUserByNick(targetNick);
+	User* targetUser = channel->getUserByNick(nick_being_kicked);
+	// Target is not in the channel
 	if (targetUser == NULL) {
-		std::string msg = ":" + server.getServerName() + " 441 " + nick + " " + targetNick + " " + channelName + " :They aren't on that channel";
-		user.reply(msg);
+		std::string err_msg = ":" + server.getServerName() + " 441 " + nick + " " + nick_being_kicked + " " + channel_name + " :They aren't on that channel";
+		user.reply(err_msg);
 		return;
 	}
 
-	/* 
-	 * 6. Execute KICK! (Broadcast FIRST, then Remove)
-	 */
-	std::string kickMessage = ":" + nick + " KICK " + channelName + " " + targetNick + " :" + reason;
+	std::string kickMessage = ":" + nick + " KICK " + channel_name + " " + nick_being_kicked + " :" + reason;
 
-	channel->broadcast(kickMessage, NULL); // Sends message to everyone including the target and sender
-	channel->removeUser(targetUser); // Removes the target user from the channel.
+	channel->broadcast(kickMessage, NULL); // Send message to all users in the channel
+	channel->removeUser(targetUser); // Remove the target from the channel
 }
