@@ -4,6 +4,7 @@
  *              In the IRC protocol, this command MUST be sent before
  *              the NICK and USER commands during the initial connection.
  * 
+ * Params: 0    1
  * Syntax: PASS <password>
  * 
  * Example: PASS pw123
@@ -16,33 +17,26 @@ void CmdPass::execute(User &user, Server &server) {
 	// This prevents formatting errors in IRC numeric replies. (=> std::string msg = ...)
 	std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
 
-	/*
-	 * 1. Check parameter count
-	 * Syntax: PASS <password>
-	 */
+	// Parameter validation
 	if (getParamCount() < 1) {
-		std::string errMsg = ":" + server.getServerName() + " 461 " + nick + " PASS: Not enough parameters";
-		user.reply(errMsg);
+		std::string err_msg = ":" + server.getServerName() + " 461 " + nick + " PASS: Not enough parameters";
+		user.reply(err_msg);
 		return;
 	}
 
-	/*
-	 * 2. Check if the user is already registered
-	 */
+	// Check if the user is already registered
 	if (user.isRegistered()) {
-		std::string errMsg = ":" + server.getServerName() + " 462 " + nick + " :Unauthorized command (already registered)";
-		user.reply(errMsg);
+		std::string err_msg = ":" + server.getServerName() + " 462 " + nick + " :Unauthorized command (already registered)";
+		user.reply(err_msg);
 		return;
 	}
 
-	/*
-	 * 3. Validate the password
-	 */
-	std::string given_password = this->params_[0];
+	// Validate the password
+	std::string given_password = this->getParam(0);
 	if (given_password == server.getPassword()) {
 		user.setPassOK(true);
 	} else {
-		std::string errMsg = ":" + server.getServerName() + " 464 " + nick + " :Password incorrect";
-		user.reply(errMsg);
+		std::string err_msg = ":" + server.getServerName() + " 464 " + nick + " :Password incorrect";
+		user.reply(err_msg);
 	}
 }

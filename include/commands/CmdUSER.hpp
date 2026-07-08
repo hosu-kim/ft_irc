@@ -5,6 +5,7 @@
  *              It must be used alongside the NICK command to register a connection.
  *              Once a user is registered, using this command again will return an error.
  * 
+ * Params:      0          1          2             3
  * Syntax: USER <username> <hostname> <servername> :<realname>
  * 
  * Examples:                                               vvv: <hostname> <servername> => No longer used

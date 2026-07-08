@@ -4,7 +4,7 @@
  *              Only channel operators cna modify modes (i, t, k, l, o).
  *              If no mode parameters are provided, it queries the active modes.
  * 
- * Params" 0    1         2                 3
+ * Params: 0    1         [2]               [3]
  * Syntax: MODE <channel> [[+/-]<mode_char> [<mode_arg>]]
  * 
  * Examples:

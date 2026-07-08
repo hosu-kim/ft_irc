@@ -5,6 +5,7 @@
  *              If provided, it sets the channel's topic to the new value.
  *              To clear a channel's topic, an empty topic string can be provided.
  * 
+ * Params:       0         [1]
  * Syntax: TOPIC <channel> [<topic>]
  * 
  * Examples:

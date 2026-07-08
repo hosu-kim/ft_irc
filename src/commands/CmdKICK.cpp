@@ -3,7 +3,7 @@
  * Description: Used when a channel operator forcefully removes (=kicks)
  *              a user from a channel.
  * 
- * Params: 0    1         2      3
+ * Params: 0    1         2      [3]
  * Syntax: KICK <channel> <user> [<reason>]
  * 
  * Example: KICK #42prague bad_user :Don't spam!

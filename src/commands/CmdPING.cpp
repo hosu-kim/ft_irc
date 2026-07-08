@@ -3,6 +3,7 @@
  * Description: Used by the server and client to check if the connection is still alive.
  *              When a PING is received, a PONG response must be sent back immediately.
  * 
+ * Params:      0
  * Syntax: PING <server/client_name>
  * 
  * Examples:
@@ -18,27 +19,19 @@
 #include "CmdPING.hpp"
 
 void CmdPing::execute(User& user, Server& server) {
-	/*
-	 * Check if the params container is empty
-	 */
-	if (getParamCount() == 0) {
-		std::string errMsg = ":" + server.getServerName() + " 409 " + user.getUserName() + " :No origin specified";
-		user.reply(errMsg);
+	// Parameter validation
+	if (this->getParamCount() == 0) {
+		std::string err_msg = ":" + server.getServerName() + " 409 " + user.getUserName() + " :No origin specified";
+		user.reply(err_msg);
 		return;
 	}
 
-	/*
-	 * Grab the token sent by the client
-	 */
-	std::string received_token = params_[0];
+	// Grab the message sent by the client
+	std::string received_token = this->params_[0];
 
-	/*
-	 * Build the PONG response message
-	 */
-	std::string response = ":" + server.getServerName() + " PONG " + server.getServerName() + " :" + received_token;
+	// Build the PONG response message
+	std::string response_msg = ":" + server.getServerName() + " PONG " + server.getServerName() + " :" + received_token;
 
-	/*
-	 * Send it back to the client
-	 */
-	user.reply(response);
+	// * Send it back to the client
+	user.reply(response_msg);
 }

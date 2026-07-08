@@ -4,6 +4,7 @@
  *              If a message is provided, it'll be sent to the channel members.
  *              This command allows a user to depart from channels.
  * 
+ * Params: 0    1                     [2]
  * Syntax: PART <channel>[,<channel>] [<message>]
  * 
  * Examples:

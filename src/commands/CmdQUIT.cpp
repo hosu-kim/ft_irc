@@ -4,6 +4,7 @@
  *              An optional quit message can be provided, which is broadcasted to
  *              other user in the channels that the quitting user is a member of.
  * 
+ * Params:      [0]
  * Syntax: QUIT [:<Quit message>]
  * 
  * Examples:
@@ -14,33 +15,27 @@
 #include "CmdQUIT.hpp"
 
 void CmdQuit::execute(User &user, Server &server) {
-	/*
-	 * 1. Determine the quit msg (reason)
-	 */
-	std::string quitMsg = "";
-	// 1a. If the user provided a message
+	std::string quit_msg = "";
+	// The user being quit provided a message
 	if (this->getParamCount() > 0)
-		quitMsg = this->getParam(0);
-	// 1b. user provided no message
+		quit_msg = this->getParam(0);
+	// the user being quit provided no message
 	else
-		quitMsg = "Client Quit";
+		quit_msg = "Client Quit";
 
-	/*
-	 * 2. Format the QUIT message to broadcast
-	 */
+	// Format the QUIT message to broadcast
 	std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
-	std::string formattedMsg = ":" + nick + "!" + user.getUserName() + "@" + user.getHostName() + " QUIT :" + quitMsg;
+	std::string msg_in_format = ":" + nick + "!" + user.getUserName() + "@" + user.getHostName() + " QUIT :" + quit_msg;
 
-	/*
-	 * 3. Broadcast to others & Remove the user
-	 */
-	std::map<std::string, Channel*> joinedChannels = user.getJoinedChannels();
-	// - Find all channels this user is in.
-	// - channel->broadcast(formattedMsg, &user);
-	for (std::map<std::string, Channel*>::iterator it = joinedChannels.begin(); it != joinedChannels.end(); ++it) {
+	// Broadcast to the others and remove the user
+	std::map<std::string, Channel*> joined_channels = user.getJoinedChannels();
+
+	// Iterate channels the user has joined and leave from the channels one by one
+	std::map<std::string, Channel*>::iterator it;
+	for (it = joined_channels.begin(); it != joined_channels.end(); ++it) {
 		Channel* channel = it->second;
 
-		channel->broadcast(formattedMsg, &user);
+		channel->broadcast(msg_in_format, &user);
 
 		channel->removeUser(&user);
 
@@ -48,6 +43,7 @@ void CmdQuit::execute(User &user, Server &server) {
 			server.removeChannel(channel->getChannelName());
 		}
 	}
+
+	// Leave from the user
 	server.removeUser(user);
-	//      - server.method_to_remove_user(user);
 }

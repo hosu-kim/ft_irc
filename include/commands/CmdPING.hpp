@@ -3,6 +3,7 @@
  * Description: Used by the server and client to check if the connection is still alive.
  *              When a PING is received, a PONG response must be sent back immediately.
  * 
+ * Params:      0
  * Syntax: PING <server/client_name>
  * 
  * Examples:

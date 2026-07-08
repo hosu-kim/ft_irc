@@ -4,6 +4,7 @@
  *              Despite the name "PRIV", it is used for both 1:1 private messages
  *              and public channel messages.
  * 
+ * Params:         0         1
  * Syntax: PRIVMSG <target> :<message>
  * 
  * Examples:

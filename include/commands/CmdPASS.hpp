@@ -4,6 +4,7 @@
  *              In the IRC protocol, this command MUST be sent before
  *              the NICK and USER commands during the initial connection.
  * 
+ * Params: 0    1
  * Syntax: PASS <password>
  * 
  * Example: PASS pw123

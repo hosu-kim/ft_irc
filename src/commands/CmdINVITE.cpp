@@ -4,7 +4,7 @@
  *              It is especially usuful for allowing users to join
  *              invite-only channels (mode +i).
  * 
- * Params: 0.     1.         2.
+ * Params: 0      1          2
  * Syntax: INVITE <nickname> <channel>
  * 
  * Example: INVITE friend123 #42prague

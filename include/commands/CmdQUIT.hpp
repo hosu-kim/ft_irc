@@ -4,6 +4,7 @@
  *              An optional quit message can be provided, which is broadcasted to
  *              other user in the channels that the quitting user is a member of.
  * 
+ * Params:      [0]
  * Syntax: QUIT [:<Quit message>]
  * 
  * Examples:
@@ -15,8 +16,7 @@
 
 #include "ACmd.hpp"
 
-class CmdQuit : public ACmd
-{
+class CmdQuit : public ACmd {
 	public:
 		CmdQuit(std::string cmd, std::vector<std::string> params)
 		: ACmd(cmd, params) {}

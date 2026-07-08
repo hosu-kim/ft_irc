@@ -5,6 +5,7 @@
  *              It must be used alongside the NICK command to register a connection.
  *              Once a user is registered, using this command again will return an error.
  * 
+ * Params:      0          1          2             3
  * Syntax: USER <username> <hostname> <servername> :<realname>
  * 
  * Examples:                                               vvv: <hostname> <servername> => No longer used
@@ -22,48 +23,34 @@ void CmdUser::execute(User &user, Server &server) {
 	// This prevents formatting errors in IRC numeric replies. (=> std::string msg = ...)
 	std::string nick = user.getNickname().empty() ? "*" : user.getNickname();
 
-	/* 
-	 * 1. Check if there are enough parameters
-	 */
-	// USER command strictly requires exactly 4 parameters.
+	// Parameter validation: USER command strictly requires exactly 4 parameters.
 	if (this->getParamCount() < 4) {
-		std::string errMsg = ":" + server.getServerName() + " 461 " + nick + " USER :Not enough parameters";
-		user.reply(errMsg);
+		std::string err_msg = ":" + server.getServerName() + " 461 " + nick + " USER :Not enough parameters";
+		user.reply(err_msg);
 		return;
 	}
 
-	/* 
-	 * 2. Check if the user is already registered
-	 */
-	// If the user's username is already set, they cannot call the USER command again.
+	// Check if the user is already registered
 	if (user.isRegistered() || !user.getUserName().empty()) {
-		std::string errMsg = ":" + server.getServerName() + " 462 " + nick + " :Unauthorized command (already registered)";
-		user.reply(errMsg);
+		std::string err_msg = ":" + server.getServerName() + " 462 " + nick + " :Unauthorized command (already registered)";
+		user.reply(err_msg);
 		return;
 	}
 
-	/* 
-	 * 3. Save the user information
-	 */
-	// Note: param(1) <hostname> and param(2) <servername> are ignored in modern IRC
-	std::string userName = this->getParam(0);
-	std::string realName = this->getParam(3);
+	// Save the user information
+	// Note: param(1) <hostname> and param(2) <servername> are not used in modern IRC
+	std::string user_name = this->getParam(0);
+	std::string real_name = this->getParam(3);
 
-	user.setUserName(userName);
-	user.setRealName(realName);
+	user.setUserName(user_name);
+	user.setRealName(real_name);
 	user.setHasUser(true);
 
-	/* 
-	 * 4. Check if Registration is complete
-	 */
-	// Connection requires PASS, NICK, and USER to be validated
+	// if PASS, NICK, and USER have been validated
 	if (user.getHasNick() && user.getHasUser() && user.getPassOK()) {
-		
-		// 4a. Mark the user as fully registered in the server
 		user.setRegistered(true);
 
-		// 4b. Send the mandatory Welcome message (001)
-		std::string welcomeMsg = ":" + server.getServerName() + " 001 " + nick + " :Welcome to the ft_irc Network, " + nick + "!" + userName + "@" + user.getHostName();
-		user.reply(welcomeMsg);
+		std::string welcome_msg = ":" + server.getServerName() + " 001 " + nick + " :Welcome to the ft_irc Network, " + nick + "!" + user_name + "@" + user.getHostName();
+		user.reply(welcome_msg);
 	}
 }

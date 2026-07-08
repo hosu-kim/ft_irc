@@ -3,7 +3,7 @@
  * Description: Used when a user wants to join a specific channel.
  *              If the channel does not exist, it will be created automatically.
  * 
- * Params: 0    1         2
+ * Params:      0         [1]
  * Syntax: JOIN <channel> [<password>]
  * 
  * Examples:
